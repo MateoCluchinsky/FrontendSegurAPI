@@ -1,16 +1,48 @@
-# React + Vite
+# Frontend SegurAPI
 
-This template provides a minimal setup to get React working in Vite with HMR and some ESLint rules.
+Este proyecto es el cliente web para la gestión de pólizas y clientes de SegurAPI, construido con **React**, **Vite** y con soporte para notificaciones en tiempo real vía **WebSockets (STOMP)**.
 
-Currently, two official plugins are available:
+## 🛠️ Requisitos Previos
 
-- [@vitejs/plugin-react](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react) uses [Oxc](https://oxc.rs)
-- [@vitejs/plugin-react-swc](https://github.com/vitejs/vite-plugin-react/blob/main/packages/plugin-react-swc) uses [SWC](https://swc.rs/)
+Asegúrate de tener instalado:
+* [Node.js](https://nodejs.org/) (versión 18 o superior recomendada)
+* Un gestor de paquetes como `npm` (incluido con Node)
 
-## React Compiler
+---
 
-The React Compiler is not enabled on this template because of its impact on dev & build performances. To add it, see [this documentation](https://react.dev/learn/react-compiler/installation).
+## 🚀 Guía de Inicio Rápido
 
-## Expanding the ESLint configuration
+Sigue estos pasos para levantar el proyecto localmente:
 
-If you are developing a production application, we recommend using TypeScript with type-aware lint rules enabled. Check out the [TS template](https://github.com/vitejs/vite/tree/main/packages/create-vite/template-react-ts) for information on how to integrate TypeScript and [`typescript-eslint`](https://typescript-eslint.io) in your project.
+### 1. Clonar el repositorio e instalar dependencias
+Entra al directorio del proyecto y ejecuta:
+```bash
+npm install
+```
+
+### 2. Configurar variables de entorno
+1. Copia el archivo de ejemplo para crear tu archivo `.env` local:
+   ```bash
+   cp .env.example .env
+   ```
+2. Abre el archivo `.env` y ajusta las URLs si tu backend corre en un puerto o dominio distinto:
+   * `VITE_API_URL`: URL base del API Backend.
+   * `VITE_FILES_URL`: Endpoint para la descarga de archivos.
+   * `VITE_WS_URL`: Endpoint de WebSocket (STOMP) para las notificaciones en tiempo real.
+
+### 3. Iniciar el servidor de desarrollo
+Para correr la aplicación en modo desarrollo con soporte para recarga rápida (HMR):
+```bash
+npm run dev
+```
+Por defecto, la aplicación estará disponible en [http://localhost:5173](http://localhost:5173).
+
+---
+
+## 📦 Construcción para Producción
+
+Si deseas compilar la aplicación para producción:
+```bash
+npm run build
+```
+Esto generará los archivos optimizados dentro de la carpeta `dist`.
