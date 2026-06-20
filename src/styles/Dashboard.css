@@ -1,0 +1,130 @@
+.dashboard-container {
+  display: flex;
+  flex-direction: column;
+  gap: 2rem;
+  animation: fadeIn 0.4s ease forwards;
+}
+
+.kpi-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(280px, 1fr));
+  gap: 1.5rem;
+}
+
+.kpi-card {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  padding: 1.5rem;
+  backdrop-filter: blur(10px);
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+}
+
+.kpi-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.2);
+  background: rgba(255, 255, 255, 0.05);
+}
+
+.kpi-icon {
+  width: 56px;
+  height: 56px;
+  border-radius: 14px;
+  background: linear-gradient(135deg, rgba(79, 70, 229, 0.2), rgba(192, 132, 252, 0.2));
+  color: #a78bfa;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-size: 1.8rem;
+}
+
+.kpi-content {
+  display: flex;
+  flex-direction: column;
+}
+
+.kpi-label {
+  font-size: 0.875rem;
+  font-weight: 500;
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  margin-bottom: 0.25rem;
+}
+
+.kpi-value {
+  font-size: 2rem;
+  font-weight: 700;
+  color: var(--text-primary);
+  margin: 0;
+}
+
+.charts-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(450px, 1fr));
+  gap: 1.5rem;
+}
+
+.chart-card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 16px;
+  padding: 1.5rem;
+}
+
+.chart-header {
+  font-size: 1.25rem;
+  font-weight: 600;
+  color: white;
+  margin-bottom: 1.5rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  padding-bottom: 1rem;
+}
+
+/* Mocked bars for visual representation */
+.mock-bar-list {
+  display: flex;
+  flex-direction: column;
+  gap: 1.25rem;
+}
+
+.mock-bar-item {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+}
+
+.mock-bar-label {
+  width: 120px;
+  font-size: 0.875rem;
+  color: var(--text-secondary);
+  text-align: right;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.mock-bar-track {
+  flex: 1;
+  height: 12px;
+  background: rgba(255, 255, 255, 0.05);
+  border-radius: 6px;
+  overflow: hidden;
+}
+
+.mock-bar-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4f46e5, #818cf8);
+  border-radius: 6px;
+  transition: width 1s ease-out;
+}
+
+.mock-bar-value {
+  width: 40px;
+  text-align: right;
+  font-size: 0.875rem;
+  font-weight: 600;
+}

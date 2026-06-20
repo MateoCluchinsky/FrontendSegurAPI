@@ -1,0 +1,420 @@
+/* Layout.css */
+.main-layout {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  background: var(--bg-gradient-start);
+  overflow: hidden;
+}
+
+/* Sidebar */
+.sidebar {
+  width: 260px;
+  background: rgba(15, 23, 42, 0.95);
+  border-right: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+  transition: all 0.3s ease;
+  z-index: 100;
+  box-shadow: 4px 0 24px rgba(0, 0, 0, 0.2);
+}
+
+.sidebar-logo {
+  padding: 1.5rem;
+  font-size: 1.5rem;
+  font-weight: 800;
+  text-align: center;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  background: linear-gradient(to right, #818cf8, #c084fc);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  letter-spacing: 1px;
+}
+
+.sidebar-nav {
+  flex: 1;
+  padding: 1.5rem 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+  overflow-y: auto;
+}
+
+.nav-item {
+  display: flex;
+  align-items: center;
+  padding: 0.875rem 1rem;
+  color: var(--text-secondary);
+  text-decoration: none;
+  border-radius: 12px;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.nav-item:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text-primary);
+}
+
+.nav-item.active {
+  background: var(--primary-color);
+  color: white;
+  box-shadow: 0 4px 12px rgba(79, 70, 229, 0.3);
+}
+
+.nav-icon {
+  margin-right: 12px;
+  font-size: 1.25rem;
+}
+
+/* Content Area */
+.content-wrapper {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100vh;
+  overflow: hidden;
+  background: linear-gradient(135deg, var(--bg-gradient-start), var(--bg-gradient-end));
+}
+
+/* Navbar */
+.navbar {
+  height: 75px;
+  background: rgba(255, 255, 255, 0.02);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding: 0 2rem;
+  z-index: 90;
+}
+
+.navbar-right {
+  display: flex;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.notification-bell {
+  position: relative;
+  background: rgba(255, 255, 255, 0.05);
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+  transition: all 0.2s;
+  color: var(--text-secondary);
+  font-size: 1.2rem;
+}
+
+.notification-bell:hover {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  transform: scale(1.05);
+}
+
+.badge {
+  position: absolute;
+  top: -2px;
+  right: -2px;
+  background: var(--error-color);
+  color: white;
+  font-size: 0.65rem;
+  font-weight: bold;
+  padding: 2px 6px;
+  border-radius: 10px;
+  border: 2px solid var(--bg-gradient-start);
+}
+
+.user-profile {
+  display: flex;
+  align-items: center;
+  gap: 1rem;
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+  padding-left: 1.5rem;
+}
+
+.user-info {
+  display: flex;
+  flex-direction: column;
+  text-align: right;
+}
+
+.user-name {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.user-role {
+  font-size: 0.75rem;
+  color: var(--text-secondary);
+}
+
+.avatar {
+  width: 44px;
+  height: 44px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #818cf8, #4f46e5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  font-weight: bold;
+  color: white;
+  font-size: 1.1rem;
+  border: 2px solid rgba(255, 255, 255, 0.2);
+  box-shadow: 0 4px 10px rgba(79, 70, 229, 0.3);
+}
+
+.logout-btn {
+  background: rgba(239, 68, 68, 0.1);
+  color: #fca5a5;
+  border: 1px solid rgba(239, 68, 68, 0.2);
+  padding: 0.6rem 1.2rem;
+  border-radius: 10px;
+  font-size: 0.875rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-left: 0.5rem;
+}
+
+.logout-btn:hover {
+  background: rgba(239, 68, 68, 0.25);
+  color: #f87171;
+  transform: translateY(-1px);
+}
+
+/* Main Content */
+.main-content {
+  flex: 1;
+  overflow-y: auto;
+  padding: 2.5rem;
+}
+
+.main-content::-webkit-scrollbar {
+  width: 8px;
+}
+
+.main-content::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.main-content::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 4px;
+}
+
+.main-content::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+/* Page Placeholders */
+.page-container {
+  max-width: 1200px;
+  margin: 0 auto;
+  animation: fadeIn 0.4s ease forwards;
+}
+
+@keyframes fadeIn {
+  from { opacity: 0; transform: translateY(10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+.page-header {
+  margin-bottom: 2rem;
+}
+
+.page-title {
+  font-size: 2.25rem;
+  font-weight: 700;
+  margin: 0 0 0.5rem 0;
+  color: white;
+}
+
+.page-description {
+  color: var(--text-secondary);
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.placeholder-card {
+  background: rgba(255, 255, 255, 0.02);
+  border: 1px solid rgba(255, 255, 255, 0.05);
+  border-radius: 20px;
+  padding: 4rem 2rem;
+  text-align: center;
+  color: var(--text-secondary);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 10px 30px -10px rgba(0,0,0,0.3);
+}
+
+.placeholder-card p {
+  font-size: 1.1rem;
+}
+
+/* -----------------------------
+   Notification Dropdown Styles
+-------------------------------- */
+.notification-bell-container {
+  position: relative;
+}
+
+.notification-dropdown {
+  position: absolute;
+  top: calc(100% + 15px);
+  right: -10px;
+  width: 340px;
+  background: #1e293b;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 16px;
+  box-shadow: 0 20px 40px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(255, 255, 255, 0.05);
+  display: flex;
+  flex-direction: column;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateY(-10px);
+  transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+  z-index: 1000;
+  overflow: hidden;
+}
+
+.notification-dropdown.open {
+  opacity: 1;
+  visibility: visible;
+  transform: translateY(0);
+}
+
+.notification-dropdown::before {
+  content: '';
+  position: absolute;
+  top: -6px;
+  right: 22px;
+  width: 12px;
+  height: 12px;
+  background: #1e293b;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  border-left: 1px solid rgba(255, 255, 255, 0.1);
+  transform: rotate(45deg);
+}
+
+.notification-header {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.notification-header h3 {
+  margin: 0;
+  font-size: 1rem;
+  color: white;
+  font-weight: 600;
+}
+
+.unread-text {
+  font-size: 0.75rem;
+  color: #60a5fa;
+  background: rgba(96, 165, 250, 0.1);
+  padding: 2px 8px;
+  border-radius: 10px;
+  font-weight: bold;
+}
+
+.notification-list {
+  max-height: 400px;
+  overflow-y: auto;
+}
+
+.notification-empty {
+  padding: 3rem 2rem;
+  text-align: center;
+  color: var(--text-secondary);
+  font-size: 0.9rem;
+}
+
+.notification-item {
+  padding: 1rem 1.25rem;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  cursor: pointer;
+  display: flex;
+  gap: 12px;
+  transition: background 0.2s;
+  position: relative;
+}
+
+.notification-item:hover {
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.notification-item.unread {
+  background: rgba(96, 165, 250, 0.05);
+}
+
+.notification-item.unread:hover {
+  background: rgba(96, 165, 250, 0.08);
+}
+
+.unread-dot {
+  width: 8px;
+  height: 8px;
+  background: #60a5fa;
+  border-radius: 50%;
+  margin-top: 6px;
+  flex-shrink: 0;
+  box-shadow: 0 0 8px rgba(96, 165, 250, 0.6);
+}
+
+.notification-content {
+  flex: 1;
+}
+
+.notification-title {
+  font-size: 0.875rem;
+  font-weight: 600;
+  color: white;
+  margin-bottom: 4px;
+}
+
+.notification-message {
+  font-size: 0.8rem;
+  color: var(--text-secondary);
+  margin-bottom: 6px;
+  line-height: 1.4;
+}
+
+.notification-time {
+  font-size: 0.7rem;
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.custom-scrollbar::-webkit-scrollbar {
+  width: 6px;
+}
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 3px;
+}
+.custom-scrollbar::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+@keyframes bounce {
+  0%, 100% { transform: translateY(0); }
+  50% { transform: translateY(-3px); }
+}
+
+.bounce-animation {
+  animation: bounce 2s infinite;
+}
