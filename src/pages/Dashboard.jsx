@@ -4,6 +4,33 @@ import { getPolizas } from '../services/polizaService';
 import { ResponsiveContainer, LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 import '../styles/Dashboard.css';
 
+const formatCurrency = (value) => {
+  return new Intl.NumberFormat('es-AR', {
+    style: 'currency',
+    currency: 'ARS',
+    minimumFractionDigits: 0
+  }).format(value || 0);
+};
+
+const formatNumber = (value) => {
+  return new Intl.NumberFormat('es-AR').format(value || 0);
+};
+
+const TimelineTooltip = ({ active, payload, label }) => {
+  if (active && payload && payload.length) {
+    const data = payload[0].payload;
+    return (
+      <div className="custom-tooltip" style={{ backgroundColor: '#1e293b', padding: '12px', borderRadius: '8px', border: '1px solid #334155', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.5)' }}>
+        <p style={{ color: '#f8fafc', margin: '0 0 8px 0', fontWeight: 'bold', borderBottom: '1px solid #334155', paddingBottom: '4px' }}>{label}</p>
+        <p style={{ color: '#94a3b8', margin: '0 0 4px 0', fontSize: '13px' }}>Cliente: <span style={{ color: '#f8fafc', fontWeight: '500' }}>{data.cliente}</span></p>
+        <p style={{ color: '#94a3b8', margin: '0 0 4px 0', fontSize: '13px' }}>Ramo: <span style={{ color: '#60a5fa', fontWeight: '500' }}>{data.ramo}</span></p>
+        <p style={{ color: '#94a3b8', margin: '0', fontSize: '13px' }}>Prima: <span style={{ color: '#34d399', fontWeight: '500' }}>{formatCurrency(data.prima)}</span></p>
+      </div>
+    );
+  }
+  return null;
+};
+
 const Dashboard = () => {
   const [stats, setStats] = useState(null);
   const [polizas, setPolizas] = useState([]);
@@ -40,18 +67,6 @@ const Dashboard = () => {
       </div>
     );
   }
-
-  const formatCurrency = (value) => {
-    return new Intl.NumberFormat('es-AR', {
-      style: 'currency',
-      currency: 'ARS',
-      minimumFractionDigits: 0
-    }).format(value || 0);
-  };
-
-  const formatNumber = (value) => {
-    return new Intl.NumberFormat('es-AR').format(value || 0);
-  };
 
   const totalClientes = stats?.cantClientesActivos || 0;
   const primas = stats?.totalPrimas || 0;
@@ -98,20 +113,6 @@ const Dashboard = () => {
 
   const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
 
-  const TimelineTooltip = ({ active, payload, label }) => {
-    if (active && payload && payload.length) {
-      const data = payload[0].payload;
-      return (
-        <div className="custom-tooltip" style={{ backgroundColor: '#1e293b', padding: '12px', borderRadius: '8px', border: '1px solid #334155', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.5)' }}>
-          <p style={{ color: '#f8fafc', margin: '0 0 8px 0', fontWeight: 'bold', borderBottom: '1px solid #334155', paddingBottom: '4px' }}>{label}</p>
-          <p style={{ color: '#94a3b8', margin: '0 0 4px 0', fontSize: '13px' }}>Cliente: <span style={{ color: '#f8fafc', fontWeight: '500' }}>{data.cliente}</span></p>
-          <p style={{ color: '#94a3b8', margin: '0 0 4px 0', fontSize: '13px' }}>Ramo: <span style={{ color: '#60a5fa', fontWeight: '500' }}>{data.ramo}</span></p>
-          <p style={{ color: '#94a3b8', margin: '0', fontSize: '13px' }}>Prima: <span style={{ color: '#34d399', fontWeight: '500' }}>{formatCurrency(data.prima)}</span></p>
-        </div>
-      );
-    }
-    return null;
-  };
 
   return (
     <div className="dashboard-container">

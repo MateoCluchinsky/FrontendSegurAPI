@@ -29,7 +29,7 @@ const Clientes = () => {
       // Manejo seguro por si el backend devuelve un Page<T> de Spring Boot
       const content = data.content || data.data || data;
       
-      setClientes(Array.isArray(content) ? content : []);
+      setClientes(Array.isArray(content) ? content.filter(c => c.activo !== false) : []);
       setTotalPages(data.totalPages || 1);
       setTotalElements(data.totalElements || (Array.isArray(content) ? content.length : 0));
       setFetchError(null);
@@ -109,14 +109,13 @@ const Clientes = () => {
               <th>Email</th>
               <th>Teléfono</th>
               <th>DNI</th>
-              <th>Estado</th>
               <th>Acciones</th>
             </tr>
           </thead>
           <tbody>
             {loading ? (
               <tr>
-                <td colSpan="7" style={{ textAlign: 'center', padding: '3rem' }}>
+                <td colSpan="6" style={{ textAlign: 'center', padding: '3rem' }}>
                   <div className="spinner" style={{ margin: '0 auto', width: '30px', height: '30px' }}></div>
                 </td>
               </tr>
@@ -132,7 +131,7 @@ const Clientes = () => {
               </tr>
             ) : clientes.length === 0 ? (
               <tr>
-                <td colSpan="7" style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-secondary)' }}>
+                <td colSpan="6" style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-secondary)' }}>
                   No se encontraron clientes.
                 </td>
               </tr>
@@ -161,16 +160,6 @@ const Clientes = () => {
                   <td>{cliente.email}</td>
                   <td>{cliente.telefono || '-'}</td>
                   <td>{cliente.dni || '-'}</td>
-                  <td>
-                    <span className="badge" style={{ 
-                      position: 'static', 
-                      background: cliente.activo !== false ? 'rgba(16, 185, 129, 0.1)' : 'rgba(239, 68, 68, 0.1)', 
-                      color: cliente.activo !== false ? '#34d399' : '#f87171', 
-                      border: `1px solid ${cliente.activo !== false ? 'rgba(16, 185, 129, 0.2)' : 'rgba(239, 68, 68, 0.2)'}` 
-                    }}>
-                      {cliente.activo !== false ? 'Activo' : 'Inactivo'}
-                    </span>
-                  </td>
                   <td>
                     <div className="action-buttons">
                       <button className="btn-icon edit" title="Editar" onClick={() => handleOpenModal(cliente)}>

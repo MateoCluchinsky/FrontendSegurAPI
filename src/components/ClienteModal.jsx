@@ -2,6 +2,15 @@ import { useState, useEffect } from 'react';
 import { createCliente, updateCliente, uploadFotoCliente, getLocalidades } from '../services/clienteService';
 import '../styles/Clientes.css';
 
+const formatDateForInput = (dateArrayOrString) => {
+  if (!dateArrayOrString) return '';
+  if (Array.isArray(dateArrayOrString)) {
+    const [year, month, day] = dateArrayOrString;
+    return `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+  }
+  return String(dateArrayOrString).substring(0, 10);
+};
+
 const ClienteModal = ({ isOpen, onClose, cliente, onSave }) => {
   const [formData, setFormData] = useState({
     nombre: '',
@@ -35,10 +44,11 @@ const ClienteModal = ({ isOpen, onClose, cliente, onSave }) => {
 
   useEffect(() => {
     if (cliente) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setFormData({
         nombre: cliente.nombre || '',
         apellido: cliente.apellido || '',
-        fechaNacimiento: cliente.fechaNacimiento || '',
+        fechaNacimiento: formatDateForInput(cliente.fechaNacimiento),
         direccion: cliente.direccion || '',
         localidadId: cliente.localidadId || cliente.localidad?.id || '',
         telefono: cliente.telefono || '',
@@ -49,6 +59,7 @@ const ClienteModal = ({ isOpen, onClose, cliente, onSave }) => {
       });
       setFotoFile(null);
     } else {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setFormData({
         nombre: '', apellido: '', fechaNacimiento: '', direccion: '',
         localidadId: '', telefono: '', email: '', dni: '', sexo: '', tipoIva: ''

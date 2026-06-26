@@ -45,7 +45,7 @@ const Login = () => {
       <div className="auth-card glass-panel">
         <div className="auth-header">
           <h2>Bienvenido de nuevo</h2>
-          <p>Ingresa a tu cuenta de SegurAPI</p>
+          <p>Ingresa a tu cuenta de Insuralytic</p>
         </div>
         
         {error && <div className="auth-error">{error}</div>}

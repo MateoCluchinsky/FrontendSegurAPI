@@ -3,6 +3,15 @@ import { createPoliza, updatePoliza, uploadArchivoPoliza, getCompanias, getRamos
 import { searchClientes } from '../services/clienteService';
 import '../styles/Clientes.css';
 
+const formatDateForInput = (dateArrayOrString) => {
+  if (!dateArrayOrString) return '';
+  if (Array.isArray(dateArrayOrString)) {
+    const [year, month, day] = dateArrayOrString;
+    return `${year}-${month.toString().padStart(2, '0')}-${day.toString().padStart(2, '0')}`;
+  }
+  return String(dateArrayOrString).substring(0, 10);
+};
+
 const PolizaModal = ({ isOpen, onClose, poliza, onSave }) => {
   const [formData, setFormData] = useState({
     nroPza: '',
@@ -47,12 +56,13 @@ const PolizaModal = ({ isOpen, onClose, poliza, onSave }) => {
 
   useEffect(() => {
     if (poliza) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setFormData({
         nroPza: poliza.nroPza || '',
         clienteId: poliza.clienteId || '',
         tipoPago: poliza.tipoPago || '',
-        inicioVigencia: poliza.inicioVigencia || '',
-        finVigencia: poliza.finVigencia || '',
+        inicioVigencia: formatDateForInput(poliza.inicioVigencia),
+        finVigencia: formatDateForInput(poliza.finVigencia),
         ramoId: poliza.ramoId || '',
         companiaId: poliza.companiaId || '',
         tipoFacturacion: poliza.tipoFacturacion || '',
@@ -63,6 +73,7 @@ const PolizaModal = ({ isOpen, onClose, poliza, onSave }) => {
       setClientSearchQuery('');
       setArchivoFile(null);
     } else {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setFormData({
         nroPza: '', clienteId: '', tipoPago: '', inicioVigencia: '',
         finVigencia: '', ramoId: '', companiaId: '', tipoFacturacion: '',
@@ -78,6 +89,7 @@ const PolizaModal = ({ isOpen, onClose, poliza, onSave }) => {
   // Búsqueda en tiempo real (debounce)
   useEffect(() => {
     if (clientSearchQuery.length < 2) {
+      // eslint-disable-next-line react-hooks/set-state-in-effect
       setClientResults([]);
       return;
     }

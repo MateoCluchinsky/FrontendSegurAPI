@@ -9,16 +9,24 @@ const Polizas = () => {
   const [loading, setLoading] = useState(true);
   const [fetchError, setFetchError] = useState(null);
   
+  const [page, setPage] = useState(0);
+  const [size] = useState(10);
+  const [totalPages, setTotalPages] = useState(0);
+  const [totalElements, setTotalElements] = useState(0);
+  const [filtroNroPza, setFiltroNroPza] = useState('');
+  const [searchInput, setSearchInput] = useState('');
+
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [polizaEditing, setPolizaEditing] = useState(null);
 
   const fetchPolizas = useCallback(async () => {
     try {
       setLoading(true);
-      const data = await getPolizas();
-      
+      const data = await getPolizas({ page, size, nroPza: filtroNroPza });
       const content = data.content || data.data || data;
-      setPolizas(Array.isArray(content) ? content : []);
+      setPolizas(Array.isArray(content) ? content.filter(p => p.activo !== false) : []);
+      setTotalPages(data.totalPages || 1);
+      setTotalElements(data.totalElements || (Array.isArray(content) ? content.length : 0));
       setFetchError(null);
     } catch (err) {
       console.error("Error al obtener pólizas", err);
@@ -27,11 +35,17 @@ const Polizas = () => {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [page, size, filtroNroPza]);
 
   useEffect(() => {
     fetchPolizas();
   }, [fetchPolizas]);
+
+  const handleSearch = (e) => {
+    e.preventDefault();
+    setPage(0);
+    setFiltroNroPza(searchInput);
+  };
 
   const handleOpenModal = (poliza = null) => {
     setPolizaEditing(poliza);
@@ -97,7 +111,16 @@ const Polizas = () => {
         <p className="page-description">Visualiza y gestiona las pólizas de seguros emitidas.</p>
       </div>
 
-      <div className="clientes-header-actions" style={{ justifyContent: 'flex-end' }}>
+      <div className="clientes-header-actions" style={{ justifyContent: 'space-between' }}>
+        <form onSubmit={handleSearch} className="search-box">
+          <span>🔍</span>
+          <input 
+            type="text" 
+            placeholder="Buscar por número..." 
+            value={searchInput}
+            onChange={(e) => setSearchInput(e.target.value)}
+          />
+        </form>
         <button className="btn-primary" onClick={() => handleOpenModal()}>
           <span>➕</span> Nueva Póliza
         </button>
@@ -183,6 +206,32 @@ const Polizas = () => {
             )}
           </tbody>
         </table>
+        
+        {/* Controles de Paginación */}
+        {!loading && totalPages > 0 && (
+          <div className="pagination">
+            <span style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
+              Total: {totalElements} pólizas
+            </span>
+            <div className="pagination-controls">
+              <button 
+                className="btn-page" 
+                disabled={page === 0} 
+                onClick={() => setPage(page - 1)}
+              >
+                Anterior
+              </button>
+              <span style={{ fontWeight: 600 }}>Página {page + 1} de {totalPages}</span>
+              <button 
+                className="btn-page" 
+                disabled={page >= totalPages - 1} 
+                onClick={() => setPage(page + 1)}
+              >
+                Siguiente
+              </button>
+            </div>
+          </div>
+        )}
       </div>
 
       <PolizaModal 

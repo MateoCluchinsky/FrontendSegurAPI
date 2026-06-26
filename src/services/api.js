@@ -24,6 +24,7 @@ api.interceptors.response.use(
     return response;
   },
   (error) => {
+<<<<<<< HEAD
     if (error.response && (error.response.status === 401 || error.response.status === 403)) {
       // Evitamos redirecciones múltiples si ya estamos en /login
       if (window.location.pathname !== '/login') {

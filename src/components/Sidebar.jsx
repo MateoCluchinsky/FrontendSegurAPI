@@ -13,7 +13,7 @@ const Sidebar = () => {
   return (
     <aside className="sidebar">
       <div className="sidebar-logo">
-        SegurAPI
+        Insuralytic
       </div>
       <nav className="sidebar-nav">
         {navItems.map((item) => (
