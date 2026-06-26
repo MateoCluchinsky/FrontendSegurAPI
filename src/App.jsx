@@ -12,6 +12,7 @@ import Dashboard from './pages/Dashboard';
 import Clientes from './pages/Clientes';
 import Polizas from './pages/Polizas';
 import Reportes from './pages/Reportes';
+import Perfil from './pages/Perfil';
 
 // Placeholders Temporales para Rutas Protegidas
 const PagePlaceholder = ({ title, desc }) => (
@@ -45,12 +46,7 @@ function App() {
                 <Route path="/clientes" element={<Clientes />} />
                 <Route path="/polizas" element={<Polizas />} />
                 <Route path="/reportes" element={<Reportes />} />
-                <Route path="/perfil" element={
-                  <PagePlaceholder 
-                    title="Mi Perfil" 
-                    desc="Configura tu cuenta y tus preferencias de usuario." 
-                  />
-                } />
+                <Route path="/perfil" element={<Perfil />} />
               </Route>
             </Route>
             
