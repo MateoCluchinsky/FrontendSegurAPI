@@ -1,11 +1,13 @@
 import { useState, useEffect, useCallback } from 'react';
 import { getClientesPaginados, deleteCliente } from '../services/clienteService';
+import { FILES_URL } from '../services/api';
 import ClienteModal from '../components/ClienteModal';
 import '../styles/Clientes.css';
 
 const Clientes = () => {
   const [clientes, setClientes] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [fetchError, setFetchError] = useState(null);
   
   // Paginación y Búsqueda
   const [page, setPage] = useState(0);
@@ -30,8 +32,10 @@ const Clientes = () => {
       setClientes(Array.isArray(content) ? content : []);
       setTotalPages(data.totalPages || 1);
       setTotalElements(data.totalElements || (Array.isArray(content) ? content.length : 0));
+      setFetchError(null);
     } catch (err) {
       console.error("Error al obtener clientes", err);
+      setFetchError("Ocurrió un problema de red al cargar los clientes. El servidor podría estar fuera de servicio.");
       setClientes([]);
     } finally {
       setLoading(false);
@@ -70,8 +74,8 @@ const Clientes = () => {
     }
   };
 
-  // URL base para las fotos, extraída del .env
-  const filesUrl = import.meta.env.VITE_FILES_URL || 'http://localhost:8080/api/uploads';
+  // URL base extraída del interceptor API
+  const filesUrl = FILES_URL;
 
   return (
     <div className="clientes-container">
@@ -114,6 +118,16 @@ const Clientes = () => {
               <tr>
                 <td colSpan="7" style={{ textAlign: 'center', padding: '3rem' }}>
                   <div className="spinner" style={{ margin: '0 auto', width: '30px', height: '30px' }}></div>
+                </td>
+              </tr>
+            ) : fetchError ? (
+              <tr>
+                <td colSpan="7" style={{ textAlign: 'center', padding: '2rem' }}>
+                  <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', borderRadius: '12px', padding: '1.5rem', display: 'inline-block', color: '#f87171' }}>
+                    <p style={{ margin: '0 0 0.5rem 0', fontWeight: 'bold' }}>❌ Error de Conexión</p>
+                    <p style={{ margin: 0, fontSize: '0.9rem' }}>{fetchError}</p>
+                    <button onClick={fetchClientes} style={{ marginTop: '1rem', background: '#ef4444', color: 'white', border: 'none', padding: '0.5rem 1rem', borderRadius: '6px', cursor: 'pointer' }}>Reintentar</button>
+                  </div>
                 </td>
               </tr>
             ) : clientes.length === 0 ? (
