@@ -11,6 +11,7 @@ import Verificar from './pages/Verificar';
 import Dashboard from './pages/Dashboard';
 import Clientes from './pages/Clientes';
 import Polizas from './pages/Polizas';
+import Reportes from './pages/Reportes';
 
 // Placeholders Temporales para Rutas Protegidas
 const PagePlaceholder = ({ title, desc }) => (
@@ -43,12 +44,7 @@ function App() {
                 <Route path="/dashboard" element={<Dashboard />} />
                 <Route path="/clientes" element={<Clientes />} />
                 <Route path="/polizas" element={<Polizas />} />
-                <Route path="/reportes" element={
-                  <PagePlaceholder 
-                    title="Reportes y Estadísticas" 
-                    desc="Generación de informes exportables y análisis de datos." 
-                  />
-                } />
+                <Route path="/reportes" element={<Reportes />} />
                 <Route path="/perfil" element={
                   <PagePlaceholder 
                     title="Mi Perfil" 
