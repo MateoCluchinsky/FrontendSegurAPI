@@ -1,7 +1,7 @@
 import api from './api';
 
-export const getPolizas = async () => {
-  const response = await api.get('/polizas');
+export const getPolizas = async (params = {}) => {
+  const response = await api.get('/polizas', { params });
   return response.data;
 };
 

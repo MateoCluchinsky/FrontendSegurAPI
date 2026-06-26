@@ -1,35 +1,36 @@
 import { useState, useEffect } from 'react';
 import { getDashboardStats } from '../services/dashboardService';
+import { getPolizas } from '../services/polizaService';
+import { ResponsiveContainer, LineChart, Line, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip } from 'recharts';
 import '../styles/Dashboard.css';
 
 const Dashboard = () => {
   const [stats, setStats] = useState(null);
+  const [polizas, setPolizas] = useState([]);
+  const [activeTab, setActiveTab] = useState('timeline');
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
   useEffect(() => {
-    const fetchStats = async () => {
+    const fetchData = async () => {
       try {
         setLoading(true);
-        const data = await getDashboardStats();
-        setStats(data);
+        const [statsData, polizasData] = await Promise.all([
+          getDashboardStats(),
+          getPolizas({ size: 10000 })
+        ]);
+        setStats(statsData);
+        setPolizas(Array.isArray(polizasData?.content) ? polizasData.content : (Array.isArray(polizasData) ? polizasData : []));
       } catch (err) {
-        console.error("Error fetching dashboard stats:", err);
+        console.error("Error fetching dashboard data:", err);
         setError("No se pudieron cargar las estadísticas. Verifica tu conexión al servidor.");
-        
-        // Datos mockeados temporalmente para visualizar la interfaz si falla el backend
-        setStats({
-          totalClientes: 0,
-          primasAcumuladas: 0,
-          polizasPorMes: [],
-          polizasPorCompania: []
-        });
+        setStats({ totalClientes: 0, primasAcumuladas: 0, polizasPorMes: [], polizasPorCompania: [] });
+        setPolizas([]);
       } finally {
         setLoading(false);
       }
     };
-
-    fetchStats();
+    fetchData();
   }, []);
 
   if (loading) {
@@ -40,7 +41,6 @@ const Dashboard = () => {
     );
   }
 
-  // Formateadores
   const formatCurrency = (value) => {
     return new Intl.NumberFormat('es-AR', {
       style: 'currency',
@@ -53,11 +53,65 @@ const Dashboard = () => {
     return new Intl.NumberFormat('es-AR').format(value || 0);
   };
 
-  // Valores seguros en caso de que la respuesta sea diferente
-  const totalClientes = stats?.totalClientes || 0;
-  const primas = stats?.primasAcumuladas || 0;
-  const porMes = stats?.polizasPorMes || [];
+  const totalClientes = stats?.cantClientesActivos || 0;
+  const primas = stats?.totalPrimas || 0;
+  const polizasActivas = stats?.cantPolizasActivas || 0;
   const porCompania = stats?.polizasPorCompania || [];
+
+  const today = new Date();
+  const next30Days = new Date();
+  next30Days.setDate(today.getDate() + 30);
+  
+  const proximosVencimientos = polizas.filter(p => {
+    if (!p.finVigencia) return false;
+    const fechaFin = new Date(p.finVigencia + 'T00:00:00'); // Truncate time safely
+    return fechaFin >= today && fechaFin <= next30Days;
+  }).length;
+
+  const timelineData = polizas
+    .filter(p => p.inicioVigencia)
+    .map(p => {
+      const d = new Date(p.inicioVigencia + 'T00:00:00');
+      return {
+        fechaRaw: d,
+        fecha: d.toLocaleDateString('es-AR', { day: '2-digit', month: 'short', year: 'numeric' }),
+        ramo: p.nombreRamo || 'Desconocido',
+        cliente: p.nombreCliente || 'Desconocido',
+        prima: p.prima || 0
+      };
+    })
+    .sort((a, b) => a.fechaRaw - b.fechaRaw);
+
+  const ramosData = polizas.reduce((acc, p) => {
+    const ramo = p.nombreRamo || 'Otro';
+    acc[ramo] = (acc[ramo] || 0) + 1;
+    return acc;
+  }, {});
+  const pieRamos = Object.keys(ramosData).map(key => ({ name: key, value: ramosData[key] }));
+
+  const pagosData = polizas.reduce((acc, p) => {
+    const pago = p.tipoPago || 'Otro';
+    acc[pago] = (acc[pago] || 0) + 1;
+    return acc;
+  }, {});
+  const piePagos = Object.keys(pagosData).map(key => ({ name: key, value: pagosData[key] }));
+
+  const COLORS = ['#3b82f6', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6', '#ec4899'];
+
+  const TimelineTooltip = ({ active, payload, label }) => {
+    if (active && payload && payload.length) {
+      const data = payload[0].payload;
+      return (
+        <div className="custom-tooltip" style={{ backgroundColor: '#1e293b', padding: '12px', borderRadius: '8px', border: '1px solid #334155', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.5)' }}>
+          <p style={{ color: '#f8fafc', margin: '0 0 8px 0', fontWeight: 'bold', borderBottom: '1px solid #334155', paddingBottom: '4px' }}>{label}</p>
+          <p style={{ color: '#94a3b8', margin: '0 0 4px 0', fontSize: '13px' }}>Cliente: <span style={{ color: '#f8fafc', fontWeight: '500' }}>{data.cliente}</span></p>
+          <p style={{ color: '#94a3b8', margin: '0 0 4px 0', fontSize: '13px' }}>Ramo: <span style={{ color: '#60a5fa', fontWeight: '500' }}>{data.ramo}</span></p>
+          <p style={{ color: '#94a3b8', margin: '0', fontSize: '13px' }}>Prima: <span style={{ color: '#34d399', fontWeight: '500' }}>{formatCurrency(data.prima)}</span></p>
+        </div>
+      );
+    }
+    return null;
+  };
 
   return (
     <div className="dashboard-container">
@@ -72,7 +126,6 @@ const Dashboard = () => {
         </div>
       )}
 
-      {/* Tarjetas KPI */}
       <div className="kpi-grid">
         <div className="kpi-card">
           <div className="kpi-icon">👥</div>
@@ -92,72 +145,191 @@ const Dashboard = () => {
           </div>
         </div>
         
-        {/* Un kpi extra derivado de los datos (Pólizas Totales Activas) */}
         <div className="kpi-card">
           <div className="kpi-icon" style={{ background: 'linear-gradient(135deg, rgba(59, 130, 246, 0.2), rgba(147, 197, 253, 0.2))', color: '#60a5fa' }}>
             🛡️
           </div>
           <div className="kpi-content">
             <span className="kpi-label">Pólizas Activas</span>
-            <h3 className="kpi-value">
-              {formatNumber(porMes.reduce((acc, curr) => acc + (curr.cantidad || 0), 0) || 0)}
-            </h3>
+            <h3 className="kpi-value">{formatNumber(polizasActivas)}</h3>
+          </div>
+        </div>
+
+        <div className="kpi-card">
+          <div className="kpi-icon" style={{ background: 'linear-gradient(135deg, rgba(239, 68, 68, 0.2), rgba(248, 113, 113, 0.2))', color: '#f87171' }}>
+            ⚠️
+          </div>
+          <div className="kpi-content">
+            <span className="kpi-label">Próximos Vencimientos (30 días)</span>
+            <h3 className="kpi-value">{formatNumber(proximosVencimientos)}</h3>
           </div>
         </div>
       </div>
 
-      {/* Gráficos Mockeados */}
-      <div className="charts-grid">
-        
-        {/* Gráfico: Pólizas por Mes */}
-        <div className="chart-card">
-          <h3 className="chart-header">Pólizas por Mes</h3>
-          {porMes.length > 0 ? (
-            <div className="mock-bar-list">
-              {porMes.map((item, index) => {
-                const maxVal = Math.max(...porMes.map(i => i.cantidad || 0), 1);
-                const width = `${((item.cantidad || 0) / maxVal) * 100}%`;
-                
-                return (
-                  <div className="mock-bar-item" key={index}>
-                    <span className="mock-bar-label">{item.mes || `Mes ${index+1}`}</span>
-                    <div className="mock-bar-track">
-                      <div className="mock-bar-fill" style={{ width }}></div>
-                    </div>
-                    <span className="mock-bar-value">{item.cantidad || 0}</span>
-                  </div>
-                );
-              })}
-            </div>
-          ) : (
-            <p style={{color: 'var(--text-secondary)'}}>No hay datos de pólizas por mes.</p>
-          )}
-        </div>
+      <div className="dashboard-tabs">
+        <button className={`tab-btn ${activeTab === 'timeline' ? 'active' : ''}`} onClick={() => setActiveTab('timeline')}>
+          Emisión de Pólizas
+        </button>
+        <button className={`tab-btn ${activeTab === 'companies' ? 'active' : ''}`} onClick={() => setActiveTab('companies')}>
+          Compañías
+        </button>
+        <button className={`tab-btn ${activeTab === 'distribution' ? 'active' : ''}`} onClick={() => setActiveTab('distribution')}>
+          Distribución de Cartera
+        </button>
+      </div>
 
-        {/* Gráfico: Pólizas por Compañía */}
-        <div className="chart-card">
-          <h3 className="chart-header">Distribución por Compañía</h3>
-          {porCompania.length > 0 ? (
-            <div className="mock-bar-list">
-              {porCompania.map((item, index) => {
-                const maxVal = Math.max(...porCompania.map(i => i.cantidad || 0), 1);
-                const width = `${((item.cantidad || 0) / maxVal) * 100}%`;
-                
-                return (
-                  <div className="mock-bar-item" key={index}>
-                    <span className="mock-bar-label">{item.compania || `Compañía ${index+1}`}</span>
-                    <div className="mock-bar-track">
-                      <div className="mock-bar-fill" style={{ width, background: 'linear-gradient(90deg, #10b981, #34d399)' }}></div>
-                    </div>
-                    <span className="mock-bar-value">{item.cantidad || 0}</span>
+      <div className="charts-container">
+        
+        {activeTab === 'timeline' && (
+          <div className="chart-card fade-in">
+            <h3 className="chart-header">Línea de Tiempo de Emisiones</h3>
+            {timelineData.length > 0 ? (
+              <div style={{ width: '100%', height: 350 }}>
+                <ResponsiveContainer>
+                  <LineChart data={timelineData} margin={{ top: 20, right: 30, left: 20, bottom: 20 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+                    <XAxis 
+                      dataKey="fecha" 
+                      stroke="#94a3b8" 
+                      tick={{ fill: '#94a3b8', fontSize: 12 }}
+                      tickMargin={10}
+                    />
+                    <YAxis 
+                      stroke="#94a3b8" 
+                      tick={{ fill: '#94a3b8', fontSize: 12 }}
+                      tickFormatter={(value) => `$${value/1000}k`}
+                    />
+                    <Tooltip content={<TimelineTooltip />} />
+                    <Line 
+                      type="stepAfter" 
+                      dataKey="prima" 
+                      name="Prima" 
+                      stroke="#60a5fa" 
+                      strokeWidth={3} 
+                      dot={{ r: 4, fill: '#1e293b', stroke: '#60a5fa', strokeWidth: 2 }} 
+                      activeDot={{ r: 6, fill: '#60a5fa', stroke: '#fff', strokeWidth: 2 }} 
+                    />
+                  </LineChart>
+                </ResponsiveContainer>
+              </div>
+            ) : (
+              <p style={{color: 'var(--text-secondary)', textAlign: 'center', padding: '2rem 0'}}>No hay datos de emisiones.</p>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'companies' && (
+          <div className="chart-card fade-in">
+            <h3 className="chart-header">Distribución por Compañía</h3>
+            {porCompania.length > 0 ? (
+              <div style={{ width: '100%', height: 350 }}>
+                <ResponsiveContainer>
+                  <BarChart data={porCompania} margin={{ top: 20, right: 30, left: 0, bottom: 20 }}>
+                    <CartesianGrid strokeDasharray="3 3" stroke="rgba(255,255,255,0.05)" vertical={false} />
+                    <XAxis dataKey="nombre" stroke="#94a3b8" tick={{ fill: '#94a3b8', fontSize: 12 }} />
+                    <YAxis stroke="#94a3b8" allowDecimals={false} tick={{ fill: '#94a3b8', fontSize: 12 }} />
+                    <Tooltip 
+                      cursor={{ fill: 'rgba(255,255,255,0.02)' }}
+                      contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '8px', color: '#f8fafc', boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.5)' }}
+                      itemStyle={{ color: '#34d399', fontWeight: '500' }}
+                    />
+                    <Bar dataKey="cantidad" name="Pólizas" fill="#34d399" radius={[4, 4, 0, 0]} maxBarSize={60}>
+                      {porCompania.map((entry, index) => (
+                        <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                      ))}
+                    </Bar>
+                  </BarChart>
+                </ResponsiveContainer>
+              </div>
+            ) : (
+              <p style={{color: 'var(--text-secondary)', textAlign: 'center', padding: '2rem 0'}}>No hay datos de pólizas por compañía.</p>
+            )}
+          </div>
+        )}
+
+        {activeTab === 'distribution' && (
+          <div className="distribution-grid fade-in">
+            <div className="chart-card">
+              <h3 className="chart-header">Composición por Ramo</h3>
+              {pieRamos.length > 0 ? (
+                <div style={{ width: '100%', height: 300 }}>
+                  <ResponsiveContainer>
+                    <PieChart>
+                      <Pie
+                        data={pieRamos}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={60}
+                        outerRadius={100}
+                        paddingAngle={5}
+                        dataKey="value"
+                      >
+                        {pieRamos.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} stroke="rgba(0,0,0,0)" />
+                        ))}
+                      </Pie>
+                      <Tooltip 
+                        contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '8px', color: '#f8fafc' }}
+                        itemStyle={{ fontWeight: '500' }}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                  <div className="custom-legend">
+                    {pieRamos.map((entry, index) => (
+                      <div key={`legend-${index}`} className="legend-item">
+                        <span className="legend-color" style={{ backgroundColor: COLORS[index % COLORS.length] }}></span>
+                        <span className="legend-name">{entry.name}</span>
+                        <span className="legend-value">{entry.value}</span>
+                      </div>
+                    ))}
                   </div>
-                );
-              })}
+                </div>
+              ) : (
+                <p style={{color: 'var(--text-secondary)', textAlign: 'center'}}>No hay datos por ramo.</p>
+              )}
             </div>
-          ) : (
-            <p style={{color: 'var(--text-secondary)'}}>No hay datos de pólizas por compañía.</p>
-          )}
-        </div>
+
+            <div className="chart-card">
+              <h3 className="chart-header">Medios de Pago</h3>
+              {piePagos.length > 0 ? (
+                <div style={{ width: '100%', height: 300 }}>
+                  <ResponsiveContainer>
+                    <PieChart>
+                      <Pie
+                        data={piePagos}
+                        cx="50%"
+                        cy="50%"
+                        innerRadius={60}
+                        outerRadius={100}
+                        paddingAngle={5}
+                        dataKey="value"
+                      >
+                        {piePagos.map((entry, index) => (
+                          <Cell key={`cell-${index}`} fill={COLORS[(index + 2) % COLORS.length]} stroke="rgba(0,0,0,0)" />
+                        ))}
+                      </Pie>
+                      <Tooltip 
+                        contentStyle={{ backgroundColor: '#1e293b', border: '1px solid #334155', borderRadius: '8px', color: '#f8fafc' }}
+                        itemStyle={{ fontWeight: '500' }}
+                      />
+                    </PieChart>
+                  </ResponsiveContainer>
+                  <div className="custom-legend">
+                    {piePagos.map((entry, index) => (
+                      <div key={`legend-${index}`} className="legend-item">
+                        <span className="legend-color" style={{ backgroundColor: COLORS[(index + 2) % COLORS.length] }}></span>
+                        <span className="legend-name">{entry.name}</span>
+                        <span className="legend-value">{entry.value}</span>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              ) : (
+                <p style={{color: 'var(--text-secondary)', textAlign: 'center'}}>No hay datos de pagos.</p>
+              )}
+            </div>
+          </div>
+        )}
 
       </div>
     </div>
