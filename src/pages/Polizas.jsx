@@ -64,6 +64,27 @@ const Polizas = () => {
     return date.toLocaleDateString('es-AR');
   };
 
+  const handleShare = async (poliza) => {
+    const shareData = {
+      title: `Póliza ${poliza.nroPza} - SegurAPI`,
+      text: `Datos de Póliza:\n- Nro: ${poliza.nroPza}\n- Cliente: ${poliza.nombreCliente}\n- Compañía: ${poliza.nombreCompania}\n- Ramo: ${poliza.nombreRamo}\n- Inicio de Vigencia: ${formatDate(poliza.inicioVigencia)}`
+    };
+
+    try {
+      if (navigator.share) {
+        await navigator.share(shareData);
+      } else {
+        // Fallback si el navegador no soporta Web Share API
+        navigator.clipboard.writeText(shareData.text);
+        alert('Datos copiados al portapapeles. (Tu navegador no soporta el menú nativo de compartir)');
+      }
+    } catch (err) {
+      if (err.name !== 'AbortError') {
+        console.error('Error al compartir', err);
+      }
+    }
+  };
+
   return (
     <div className="clientes-container">
       <div className="page-header" style={{ marginBottom: '0' }}>
@@ -131,6 +152,9 @@ const Polizas = () => {
                           📄
                         </a>
                       )}
+                      <button className="btn-icon" title="Compartir" onClick={() => handleShare(poliza)} style={{ background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', border: '1px solid rgba(59, 130, 246, 0.2)' }}>
+                        🔗
+                      </button>
                       <button className="btn-icon edit" title="Editar" onClick={() => handleOpenModal(poliza)}>
                         ✏️
                       </button>

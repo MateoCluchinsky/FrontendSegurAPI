@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './context/AuthContext';
 import { NotificationProvider } from './context/NotificationContext';
+import { ThemeProvider } from './context/ThemeContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import MainLayout from './components/MainLayout';
 
@@ -31,29 +32,31 @@ function App() {
   return (
     <AuthProvider>
       <NotificationProvider>
-        <BrowserRouter>
-          <Routes>
-            {/* Rutas Públicas */}
-            <Route path="/login" element={<Login />} />
-            <Route path="/registro" element={<Registro />} />
-            <Route path="/verificar" element={<Verificar />} />
-            
-            {/* Rutas Protegidas bajo ProtectedRoute */}
-            <Route element={<ProtectedRoute />}>
-              {/* El MainLayout envuelve las rutas que comparten la estructura visual */}
-              <Route element={<MainLayout />}>
-                <Route path="/dashboard" element={<Dashboard />} />
-                <Route path="/clientes" element={<Clientes />} />
-                <Route path="/polizas" element={<Polizas />} />
-                <Route path="/reportes" element={<Reportes />} />
-                <Route path="/perfil" element={<Perfil />} />
+        <ThemeProvider>
+          <BrowserRouter>
+            <Routes>
+              {/* Rutas Públicas */}
+              <Route path="/login" element={<Login />} />
+              <Route path="/registro" element={<Registro />} />
+              <Route path="/verificar" element={<Verificar />} />
+              
+              {/* Rutas Protegidas bajo ProtectedRoute */}
+              <Route element={<ProtectedRoute />}>
+                {/* El MainLayout envuelve las rutas que comparten la estructura visual */}
+                <Route element={<MainLayout />}>
+                  <Route path="/dashboard" element={<Dashboard />} />
+                  <Route path="/clientes" element={<Clientes />} />
+                  <Route path="/polizas" element={<Polizas />} />
+                  <Route path="/reportes" element={<Reportes />} />
+                  <Route path="/perfil" element={<Perfil />} />
+                </Route>
               </Route>
-            </Route>
-            
-            {/* Redirección por defecto */}
-            <Route path="*" element={<Navigate to="/dashboard" replace />} />
-          </Routes>
-        </BrowserRouter>
+              
+              {/* Redirección por defecto */}
+              <Route path="*" element={<Navigate to="/dashboard" replace />} />
+            </Routes>
+          </BrowserRouter>
+        </ThemeProvider>
       </NotificationProvider>
     </AuthProvider>
   );

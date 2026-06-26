@@ -29,3 +29,38 @@ body {
   margin: 0 auto;
   text-align: center;
 }
+
+/* --- LIGHT MODE OVERRIDES --- */
+body.light-mode {
+  --bg-gradient-start: #f8fafc;
+  --bg-gradient-end: #e2e8f0;
+  --text-primary: #0f172a;
+  --text-secondary: #475569;
+  
+  /* Puedes añadir variables extras si las necesitas, por ejemplo, para tarjetas: */
+  --bg-secondary: #ffffff;
+  --border-color: #cbd5e1;
+}
+
+/* Asegurar que las tarjetas y otros elementos oscuros cambien en modo claro */
+body.light-mode .stat-card,
+body.light-mode .chart-card,
+body.light-mode .data-table th,
+body.light-mode .data-table td,
+body.light-mode .modal-content,
+body.light-mode .form-input,
+body.light-mode .form-select,
+body.light-mode .notification-dropdown {
+  background-color: var(--bg-secondary);
+  color: var(--text-primary);
+  border-color: var(--border-color);
+}
+
+body.light-mode .data-table tr:hover {
+  background-color: #f1f5f9;
+}
+
+body.light-mode .form-input,
+body.light-mode .form-select {
+  background-color: #f8fafc;
+}

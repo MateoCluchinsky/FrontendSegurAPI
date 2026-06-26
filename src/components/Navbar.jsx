@@ -1,11 +1,13 @@
 import { useContext, useState, useRef, useEffect } from 'react';
 import { AuthContext } from '../context/AuthContext';
 import { useNotifications } from '../context/NotificationContext';
+import { ThemeContext } from '../context/ThemeContext';
 import '../styles/Layout.css';
 
 const Navbar = () => {
   const { user, logout } = useContext(AuthContext);
   const { notifications, unreadCount, markAsRead } = useNotifications();
+  const { theme, toggleTheme } = useContext(ThemeContext);
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
 
@@ -41,6 +43,11 @@ const Navbar = () => {
     <header className="navbar">
       <div className="navbar-right">
         
+        {/* Toggle Theme */}
+        <button onClick={toggleTheme} className="theme-toggle-btn" style={{ background: 'transparent', border: 'none', fontSize: '1.5rem', cursor: 'pointer', marginRight: '10px' }} title="Cambiar Tema">
+          {theme === 'dark' ? '☀️' : '🌙'}
+        </button>
+
         {/* Campanita de Notificaciones */}
         <div className="notification-bell-container" ref={dropdownRef}>
           <div className="notification-bell" onClick={toggleDropdown}>
