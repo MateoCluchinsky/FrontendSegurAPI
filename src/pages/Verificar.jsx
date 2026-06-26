@@ -1,28 +1,20 @@
-import { useState, useEffect } from 'react';
+import { useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import api from '../services/api';
 import '../styles/Auth.css';
 
 const Verificar = () => {
-  const [email, setEmail] = useState('');
+  const navigate = useNavigate();
+  const location = useLocation();
+
+  const [email, setEmail] = useState(() => {
+    const params = new URLSearchParams(location.search);
+    return location.state?.email || params.get('email') || '';
+  });
   const [codigo, setCodigo] = useState('');
   const [error, setError] = useState('');
   const [success, setSuccess] = useState('');
   const [loading, setLoading] = useState(false);
-  
-  const navigate = useNavigate();
-  const location = useLocation();
-
-  useEffect(() => {
-    const params = new URLSearchParams(location.search);
-    const emailParam = params.get('email');
-    
-    if (location.state?.email) {
-      setEmail(location.state.email);
-    } else if (emailParam) {
-      setEmail(emailParam);
-    }
-  }, [location]);
 
   const handleSubmit = async (e) => {
     e.preventDefault();

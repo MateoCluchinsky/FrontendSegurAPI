@@ -43,7 +43,10 @@ const Clientes = () => {
   }, [filtro, page, size]);
 
   useEffect(() => {
-    fetchClientes();
+    const timer = setTimeout(() => {
+      fetchClientes();
+    }, 0);
+    return () => clearTimeout(timer);
   }, [fetchClientes]);
 
   const handleSearch = (e) => {

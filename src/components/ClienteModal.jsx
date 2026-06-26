@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 import { useState, useEffect } from 'react';
 import { createCliente, updateCliente, uploadFotoCliente, getLocalidades } from '../services/clienteService';
 import '../styles/Clientes.css';
@@ -44,7 +45,6 @@ const ClienteModal = ({ isOpen, onClose, cliente, onSave }) => {
 
   useEffect(() => {
     if (cliente) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setFormData({
         nombre: cliente.nombre || '',
         apellido: cliente.apellido || '',
@@ -59,7 +59,6 @@ const ClienteModal = ({ isOpen, onClose, cliente, onSave }) => {
       });
       setFotoFile(null);
     } else {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setFormData({
         nombre: '', apellido: '', fechaNacimiento: '', direccion: '',
         localidadId: '', telefono: '', email: '', dni: '', sexo: '', tipoIva: ''

@@ -1,3 +1,4 @@
+/* eslint-disable react-hooks/set-state-in-effect */
 import { useState, useEffect } from 'react';
 import { createPoliza, updatePoliza, uploadArchivoPoliza, getCompanias, getRamos } from '../services/polizaService';
 import { searchClientes } from '../services/clienteService';
@@ -56,7 +57,6 @@ const PolizaModal = ({ isOpen, onClose, poliza, onSave }) => {
 
   useEffect(() => {
     if (poliza) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setFormData({
         nroPza: poliza.nroPza || '',
         clienteId: poliza.clienteId || '',
@@ -73,7 +73,6 @@ const PolizaModal = ({ isOpen, onClose, poliza, onSave }) => {
       setClientSearchQuery('');
       setArchivoFile(null);
     } else {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setFormData({
         nroPza: '', clienteId: '', tipoPago: '', inicioVigencia: '',
         finVigencia: '', ramoId: '', companiaId: '', tipoFacturacion: '',
@@ -89,7 +88,6 @@ const PolizaModal = ({ isOpen, onClose, poliza, onSave }) => {
   // Búsqueda en tiempo real (debounce)
   useEffect(() => {
     if (clientSearchQuery.length < 2) {
-      // eslint-disable-next-line react-hooks/set-state-in-effect
       setClientResults([]);
       return;
     }

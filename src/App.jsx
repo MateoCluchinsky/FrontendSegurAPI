@@ -15,18 +15,7 @@ import Polizas from './pages/Polizas';
 import Reportes from './pages/Reportes';
 import Perfil from './pages/Perfil';
 
-// Placeholders Temporales para Rutas Protegidas
-const PagePlaceholder = ({ title, desc }) => (
-  <div className="page-container">
-    <div className="page-header">
-      <h1 className="page-title">{title}</h1>
-      <p className="page-description">{desc}</p>
-    </div>
-    <div className="placeholder-card">
-      <p>El contenido de este módulo se implementará próximamente.</p>
-    </div>
-  </div>
-);
+
 
 function App() {
   return (

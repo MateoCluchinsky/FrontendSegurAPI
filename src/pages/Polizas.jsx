@@ -38,7 +38,10 @@ const Polizas = () => {
   }, [page, size, filtroNroPza]);
 
   useEffect(() => {
-    fetchPolizas();
+    const timer = setTimeout(() => {
+      fetchPolizas();
+    }, 0);
+    return () => clearTimeout(timer);
   }, [fetchPolizas]);
 
   const handleSearch = (e) => {

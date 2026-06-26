@@ -1,3 +1,5 @@
+/* eslint-disable react-refresh/only-export-components */
+/* eslint-disable react-hooks/set-state-in-effect */
 import { createContext, useContext, useState, useEffect, useCallback } from 'react';
 import { Client } from '@stomp/stompjs';
 import SockJS from 'sockjs-client';
@@ -9,7 +11,6 @@ export const NotificationContext = createContext();
 export const NotificationProvider = ({ children }) => {
   const { user, isAuthenticated } = useContext(AuthContext);
   const [notifications, setNotifications] = useState([]);
-  const [stompClient, setStompClient] = useState(null);
 
   const fetchHistorial = useCallback(async () => {
     try {
@@ -24,10 +25,13 @@ export const NotificationProvider = ({ children }) => {
 
   useEffect(() => {
     let client = null;
+    let timer = null;
 
     if (isAuthenticated && user?.id) {
-      // 1. Cargar historial
-      fetchHistorial();
+      // 1. Cargar historial de manera diferida
+      timer = setTimeout(() => {
+        fetchHistorial();
+      }, 0);
 
       // 2. Configurar STOMP Client
       const token = localStorage.getItem('token');
@@ -38,8 +42,8 @@ export const NotificationProvider = ({ children }) => {
         connectHeaders: {
           Authorization: `Bearer ${token}`
         },
-        debug: (str) => {
-          // console.log(str); // Descomentar para debug STOMP
+        debug: () => {
+          // Descomentar para debug STOMP
         },
         reconnectDelay: 5000,
         heartbeatIncoming: 4000,
@@ -67,13 +71,15 @@ export const NotificationProvider = ({ children }) => {
       };
 
       client.activate();
-      setStompClient(client);
 
     } else {
       setNotifications([]);
     }
 
     return () => {
+      if (timer) {
+        clearTimeout(timer);
+      }
       if (client) {
         client.deactivate();
       }
