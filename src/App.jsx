@@ -17,11 +17,14 @@ import Perfil from './pages/Perfil';
 
 
 
+import { Toaster } from 'sonner';
+
 function App() {
   return (
     <AuthProvider>
       <NotificationProvider>
         <ThemeProvider>
+          <Toaster richColors position="top-right" />
           <BrowserRouter>
             <Routes>
               {/* Rutas Públicas */}

@@ -10,12 +10,13 @@ export const ThemeProvider = ({ children }) => {
   });
 
   useEffect(() => {
-    // Aplicamos o removemos la clase light-mode del elemento <body>
-    if (theme === 'light') {
-      document.body.classList.add('light-mode');
-    } else {
-      document.body.classList.remove('light-mode');
-    }
+    const root = window.document.documentElement;
+    
+    // Removemos la clase anterior
+    root.classList.remove('light', 'dark');
+    // Agregamos la clase actual
+    root.classList.add(theme);
+
     // Guardamos la preferencia
     localStorage.setItem('theme', theme);
   }, [theme]);
