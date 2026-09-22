@@ -18,14 +18,25 @@ import Perfil from './pages/Perfil';
 
 
 import { Toaster } from 'sonner';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
+
+const queryClient = new QueryClient({
+  defaultOptions: {
+    queries: {
+      refetchOnWindowFocus: false,
+      retry: 1,
+    },
+  },
+});
 
 function App() {
   return (
-    <AuthProvider>
-      <NotificationProvider>
-        <ThemeProvider>
-          <Toaster richColors position="top-right" />
-          <BrowserRouter>
+    <QueryClientProvider client={queryClient}>
+      <AuthProvider>
+        <NotificationProvider>
+          <ThemeProvider>
+            <Toaster richColors position="top-right" />
+            <BrowserRouter>
             <Routes>
               {/* Rutas Públicas */}
               <Route path="/login" element={<Login />} />
@@ -48,9 +59,10 @@ function App() {
               <Route path="*" element={<Navigate to="/dashboard" replace />} />
             </Routes>
           </BrowserRouter>
-        </ThemeProvider>
-      </NotificationProvider>
-    </AuthProvider>
+          </ThemeProvider>
+        </NotificationProvider>
+      </AuthProvider>
+    </QueryClientProvider>
   );
 }
 

@@ -1,19 +1,22 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getClientesPaginados, deleteCliente } from '../services/clienteService';
 import { FILES_URL } from '../services/api';
 import ClienteModal from '../components/ClienteModal';
-import '../styles/Clientes.css';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { toast } from 'sonner';
+import { Search, Plus, Edit, Trash2, ChevronLeft, ChevronRight, User } from 'lucide-react';
 
 const Clientes = () => {
-  const [clientes, setClientes] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [fetchError, setFetchError] = useState(null);
+  const queryClient = useQueryClient();
   
   // Paginación y Búsqueda
   const [page, setPage] = useState(0);
   const [size] = useState(10);
-  const [totalPages, setTotalPages] = useState(0);
-  const [totalElements, setTotalElements] = useState(0);
   const [filtro, setFiltro] = useState('');
   const [searchInput, setSearchInput] = useState('');
 
@@ -21,33 +24,29 @@ const Clientes = () => {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [clienteEditing, setClienteEditing] = useState(null);
 
-  const fetchClientes = useCallback(async () => {
-    try {
-      setLoading(true);
-      const data = await getClientesPaginados(filtro, page, size);
-      
-      // Manejo seguro por si el backend devuelve un Page<T> de Spring Boot
-      const content = data.content || data.data || data;
-      
-      setClientes(Array.isArray(content) ? content.filter(c => c.activo !== false) : []);
-      setTotalPages(data.totalPages || 1);
-      setTotalElements(data.totalElements || (Array.isArray(content) ? content.length : 0));
-      setFetchError(null);
-    } catch (err) {
-      console.error("Error al obtener clientes", err);
-      setFetchError("Ocurrió un problema de red al cargar los clientes. El servidor podría estar fuera de servicio.");
-      setClientes([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [filtro, page, size]);
+  // UseQuery para obtener clientes
+  const { data, isLoading, isError, refetch } = useQuery({
+    queryKey: ['clientes', page, size, filtro],
+    queryFn: () => getClientesPaginados(filtro, page, size),
+  });
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      fetchClientes();
-    }, 0);
-    return () => clearTimeout(timer);
-  }, [fetchClientes]);
+  const content = data?.content || data?.data || data || [];
+  const clientes = Array.isArray(content) ? content.filter(c => c.activo !== false) : [];
+  const totalPages = data?.totalPages || 1;
+  const totalElements = data?.totalElements || clientes.length;
+
+  // UseMutation para eliminar
+  const deleteMutation = useMutation({
+    mutationFn: deleteCliente,
+    onSuccess: () => {
+      toast.success('Cliente dado de baja correctamente');
+      queryClient.invalidateQueries({ queryKey: ['clientes'] });
+    },
+    onError: (err) => {
+      console.error("Error al eliminar", err);
+      toast.error('Hubo un error al eliminar el cliente.');
+    }
+  });
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -65,152 +64,163 @@ const Clientes = () => {
     setClienteEditing(null);
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = (id) => {
     if (window.confirm('¿Estás seguro de que deseas dar de baja este cliente?')) {
-      try {
-        await deleteCliente(id);
-        fetchClientes();
-      } catch (err) {
-        console.error("Error al eliminar", err);
-        alert('Hubo un error al eliminar el cliente.');
-      }
+      deleteMutation.mutate(id);
     }
   };
 
-  // URL base extraída del interceptor API
-  const filesUrl = FILES_URL;
+  const handleSave = () => {
+    // Cuando el modal guarda un cliente, invalidar caché y cerrar
+    queryClient.invalidateQueries({ queryKey: ['clientes'] });
+    handleCloseModal();
+  };
 
   return (
-    <div className="clientes-container">
-      <div className="page-header" style={{ marginBottom: '0' }}>
-        <h1 className="page-title">Gestión de Clientes</h1>
-        <p className="page-description">Administra el listado de clientes, su información y fotos de perfil.</p>
+    <div className="flex flex-col gap-6 p-6 pb-20">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Gestión de Clientes</h1>
+          <p className="text-muted-foreground mt-1">Administra el listado de clientes y su información.</p>
+        </div>
+        
+        <div className="flex w-full md:w-auto items-center gap-2">
+          <form onSubmit={handleSearch} className="relative w-full md:w-64">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input 
+              type="search" 
+              placeholder="Buscar por nombre..." 
+              className="pl-9 w-full bg-background"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+            />
+          </form>
+          <Button onClick={() => handleOpenModal()} className="shrink-0">
+            <Plus className="mr-2 h-4 w-4" /> Añadir Cliente
+          </Button>
+        </div>
       </div>
 
-      <div className="clientes-header-actions">
-        <form onSubmit={handleSearch} className="search-box">
-          <span>🔍</span>
-          <input 
-            type="text" 
-            placeholder="Buscar por nombre..." 
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-          />
-        </form>
-        
-        <button className="btn-primary" onClick={() => handleOpenModal()}>
-          <span>➕</span> Añadir Cliente
-        </button>
-      </div>
-
-      <div className="table-container">
-        <table className="data-table">
-          <thead>
-            <tr>
-              <th>Perfil</th>
-              <th>Nombre</th>
-              <th>Email</th>
-              <th>Teléfono</th>
-              <th>DNI</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
-              <tr>
-                <td colSpan="6" style={{ textAlign: 'center', padding: '3rem' }}>
-                  <div className="spinner" style={{ margin: '0 auto', width: '30px', height: '30px' }}></div>
-                </td>
-              </tr>
-            ) : fetchError ? (
-              <tr>
-                <td colSpan="7" style={{ textAlign: 'center', padding: '2rem' }}>
-                  <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', borderRadius: '12px', padding: '1.5rem', display: 'inline-block', color: '#f87171' }}>
-                    <p style={{ margin: '0 0 0.5rem 0', fontWeight: 'bold' }}>❌ Error de Conexión</p>
-                    <p style={{ margin: 0, fontSize: '0.9rem' }}>{fetchError}</p>
-                    <button onClick={fetchClientes} style={{ marginTop: '1rem', background: '#ef4444', color: 'white', border: 'none', padding: '0.5rem 1rem', borderRadius: '6px', cursor: 'pointer' }}>Reintentar</button>
-                  </div>
-                </td>
-              </tr>
-            ) : clientes.length === 0 ? (
-              <tr>
-                <td colSpan="6" style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-secondary)' }}>
-                  No se encontraron clientes.
-                </td>
-              </tr>
-            ) : (
-              clientes.map(cliente => (
-                <tr key={cliente.id}>
-                  <td>
-                    {cliente.fotoUrl ? (
-                      <img 
-                        src={`${filesUrl}/${cliente.fotoUrl}`} 
-                        alt={cliente.nombre} 
-                        className="client-avatar"
-                        onError={(e) => { 
-                          e.target.onerror = null; 
-                          e.target.src = ''; 
-                          e.target.className = 'client-avatar-placeholder'; 
-                        }}
-                      />
-                    ) : (
-                      <div className="client-avatar-placeholder">
-                        {cliente.nombre ? cliente.nombre.charAt(0).toUpperCase() : 'U'}
-                      </div>
-                    )}
-                  </td>
-                  <td style={{ fontWeight: 500, color: 'white' }}>{cliente.nombre}</td>
-                  <td>{cliente.email}</td>
-                  <td>{cliente.telefono || '-'}</td>
-                  <td>{cliente.dni || '-'}</td>
-                  <td>
-                    <div className="action-buttons">
-                      <button className="btn-icon edit" title="Editar" onClick={() => handleOpenModal(cliente)}>
-                        ✏️
-                      </button>
-                      <button className="btn-icon delete" title="Dar de Baja" onClick={() => handleDelete(cliente.id)}>
-                        🗑️
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
-        
-        {/* Controles de Paginación */}
-        {!loading && totalPages > 0 && (
-          <div className="pagination">
-            <span style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-              Total: {totalElements} clientes
-            </span>
-            <div className="pagination-controls">
-              <button 
-                className="btn-page" 
-                disabled={page === 0} 
-                onClick={() => setPage(page - 1)}
-              >
-                Anterior
-              </button>
-              <span style={{ fontWeight: 600 }}>Página {page + 1} de {totalPages}</span>
-              <button 
-                className="btn-page" 
-                disabled={page >= totalPages - 1} 
-                onClick={() => setPage(page + 1)}
-              >
-                Siguiente
-              </button>
-            </div>
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle>Listado de Clientes</CardTitle>
+          <CardDescription>
+            {totalElements} clientes activos en la base de datos.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead className="w-[80px] text-center">Perfil</TableHead>
+                  <TableHead>Nombre</TableHead>
+                  <TableHead>Email</TableHead>
+                  <TableHead>Teléfono</TableHead>
+                  <TableHead>DNI</TableHead>
+                  <TableHead className="text-right">Acciones</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {isLoading ? (
+                  Array.from({ length: 5 }).map((_, i) => (
+                    <TableRow key={`skeleton-${i}`}>
+                      <TableCell><Skeleton className="h-10 w-10 rounded-full mx-auto" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-[150px]" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-[200px]" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-[100px]" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-[80px]" /></TableCell>
+                      <TableCell><Skeleton className="h-8 w-[80px] ml-auto" /></TableCell>
+                    </TableRow>
+                  ))
+                ) : isError ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="h-24 text-center text-destructive">
+                      Ocurrió un problema al cargar los clientes.
+                      <Button variant="outline" size="sm" onClick={() => refetch()} className="ml-4">Reintentar</Button>
+                    </TableCell>
+                  </TableRow>
+                ) : clientes.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={6} className="h-24 text-center text-muted-foreground">
+                      No se encontraron clientes.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  clientes.map((cliente) => (
+                    <TableRow key={cliente.id} className="group">
+                      <TableCell className="text-center">
+                        {cliente.fotoUrl ? (
+                          <img 
+                            src={`${FILES_URL}/${cliente.fotoUrl}`} 
+                            alt={cliente.nombre} 
+                            className="h-10 w-10 rounded-full object-cover mx-auto"
+                            onError={(e) => { 
+                              e.target.onerror = null; 
+                              e.target.src = ''; 
+                              e.target.className = 'hidden'; 
+                              e.target.nextSibling.classList.remove('hidden');
+                            }}
+                          />
+                        ) : null}
+                        <div className={`h-10 w-10 rounded-full bg-muted flex items-center justify-center mx-auto ${cliente.fotoUrl ? 'hidden' : ''}`}>
+                          <User className="h-5 w-5 text-muted-foreground" />
+                        </div>
+                      </TableCell>
+                      <TableCell className="font-medium">{cliente.nombre} {cliente.apellido}</TableCell>
+                      <TableCell>{cliente.email}</TableCell>
+                      <TableCell>{cliente.telefono || '-'}</TableCell>
+                      <TableCell>{cliente.dni || '-'}</TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-2">
+                          <Button variant="ghost" size="icon" onClick={() => handleOpenModal(cliente)}>
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" onClick={() => handleDelete(cliente.id)} className="text-destructive hover:text-destructive hover:bg-destructive/10">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
           </div>
-        )}
-      </div>
+
+          {!isLoading && totalPages > 0 && (
+            <div className="flex items-center justify-between mt-4">
+              <div className="text-sm text-muted-foreground">
+                Mostrando página {page + 1} de {totalPages}
+              </div>
+              <div className="flex items-center space-x-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  disabled={page === 0} 
+                  onClick={() => setPage(page - 1)}
+                >
+                  <ChevronLeft className="h-4 w-4 mr-1" /> Anterior
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  disabled={page >= totalPages - 1} 
+                  onClick={() => setPage(page + 1)}
+                >
+                  Siguiente <ChevronRight className="h-4 w-4 ml-1" />
+                </Button>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       <ClienteModal 
         isOpen={isModalOpen} 
         onClose={handleCloseModal} 
         cliente={clienteEditing} 
-        onSave={fetchClientes} 
+        onSave={handleSave} 
       />
     </div>
   );

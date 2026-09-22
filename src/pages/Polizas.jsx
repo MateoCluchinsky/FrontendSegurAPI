@@ -1,48 +1,48 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
+import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getPolizas, deletePoliza } from '../services/polizaService';
 import { FILES_URL } from '../services/api';
 import PolizaModal from '../components/PolizaModal';
-import '../styles/Clientes.css';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Skeleton } from '@/components/ui/skeleton';
+import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import { toast } from 'sonner';
+import { Search, Plus, Edit, Trash2, ChevronLeft, ChevronRight, FileText, Link as LinkIcon } from 'lucide-react';
 
 const Polizas = () => {
-  const [polizas, setPolizas] = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [fetchError, setFetchError] = useState(null);
+  const queryClient = useQueryClient();
   
   const [page, setPage] = useState(0);
   const [size] = useState(10);
-  const [totalPages, setTotalPages] = useState(0);
-  const [totalElements, setTotalElements] = useState(0);
   const [filtroNroPza, setFiltroNroPza] = useState('');
   const [searchInput, setSearchInput] = useState('');
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [polizaEditing, setPolizaEditing] = useState(null);
 
-  const fetchPolizas = useCallback(async () => {
-    try {
-      setLoading(true);
-      const data = await getPolizas({ page, size, nroPza: filtroNroPza });
-      const content = data.content || data.data || data;
-      setPolizas(Array.isArray(content) ? content.filter(p => p.activo !== false) : []);
-      setTotalPages(data.totalPages || 1);
-      setTotalElements(data.totalElements || (Array.isArray(content) ? content.length : 0));
-      setFetchError(null);
-    } catch (err) {
-      console.error("Error al obtener pólizas", err);
-      setFetchError("Ocurrió un problema de red al cargar las pólizas. El servidor podría estar fuera de servicio.");
-      setPolizas([]);
-    } finally {
-      setLoading(false);
-    }
-  }, [page, size, filtroNroPza]);
+  const { data, isLoading, isError, refetch } = useQuery({
+    queryKey: ['polizas', page, size, filtroNroPza],
+    queryFn: () => getPolizas({ page, size, nroPza: filtroNroPza }),
+  });
 
-  useEffect(() => {
-    const timer = setTimeout(() => {
-      fetchPolizas();
-    }, 0);
-    return () => clearTimeout(timer);
-  }, [fetchPolizas]);
+  const content = data?.content || data?.data || data || [];
+  const polizas = Array.isArray(content) ? content.filter(p => p.activo !== false) : [];
+  const totalPages = data?.totalPages || 1;
+  const totalElements = data?.totalElements || polizas.length;
+
+  const deleteMutation = useMutation({
+    mutationFn: deletePoliza,
+    onSuccess: () => {
+      toast.success('Póliza anulada correctamente');
+      queryClient.invalidateQueries({ queryKey: ['polizas'] });
+    },
+    onError: (err) => {
+      console.error("Error al anular", err);
+      toast.error('Hubo un error al anular la póliza.');
+    }
+  });
 
   const handleSearch = (e) => {
     e.preventDefault();
@@ -60,20 +60,11 @@ const Polizas = () => {
     setPolizaEditing(null);
   };
 
-  const handleDelete = async (id) => {
+  const handleDelete = (id) => {
     if (window.confirm('¿Estás seguro de que deseas anular esta póliza?')) {
-      try {
-        await deletePoliza(id);
-        fetchPolizas();
-      } catch (err) {
-        console.error("Error al anular", err);
-        alert('Hubo un error al anular la póliza.');
-      }
+      deleteMutation.mutate(id);
     }
   };
-
-  // URL base extraída del interceptor API
-  const filesUrl = FILES_URL;
 
   const formatCurrency = (value) => {
     return new Intl.NumberFormat('es-AR', { style: 'currency', currency: 'ARS' }).format(value || 0);
@@ -81,7 +72,6 @@ const Polizas = () => {
 
   const formatDate = (dateStr) => {
     if (!dateStr) return '-';
-    // Fix timezone offset issues when rendering dates
     const date = new Date(dateStr + 'T12:00:00Z');
     return date.toLocaleDateString('es-AR');
   };
@@ -96,9 +86,8 @@ const Polizas = () => {
       if (navigator.share) {
         await navigator.share(shareData);
       } else {
-        // Fallback si el navegador no soporta Web Share API
         navigator.clipboard.writeText(shareData.text);
-        alert('Datos copiados al portapapeles. (Tu navegador no soporta el menú nativo de compartir)');
+        toast.info('Datos copiados al portapapeles. (Navegador sin Web Share API)');
       }
     } catch (err) {
       if (err.name !== 'AbortError') {
@@ -107,141 +96,157 @@ const Polizas = () => {
     }
   };
 
+  const handleSave = () => {
+    queryClient.invalidateQueries({ queryKey: ['polizas'] });
+    handleCloseModal();
+  };
+
   return (
-    <div className="clientes-container">
-      <div className="page-header" style={{ marginBottom: '0' }}>
-        <h1 className="page-title">Control de Pólizas</h1>
-        <p className="page-description">Visualiza y gestiona las pólizas de seguros emitidas.</p>
-      </div>
-
-      <div className="clientes-header-actions" style={{ justifyContent: 'space-between' }}>
-        <form onSubmit={handleSearch} className="search-box">
-          <span>🔍</span>
-          <input 
-            type="text" 
-            placeholder="Buscar por número..." 
-            value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-          />
-        </form>
-        <button className="btn-primary" onClick={() => handleOpenModal()}>
-          <span>➕</span> Nueva Póliza
-        </button>
-      </div>
-
-      <div className="table-container">
-        <table className="data-table">
-          <thead>
-            <tr>
-              <th>Nro Póliza</th>
-              <th>Cliente</th>
-              <th>Aseguradora</th>
-              <th>Ramo</th>
-              <th>Vigencia</th>
-              <th>Prima</th>
-              <th>Acciones</th>
-            </tr>
-          </thead>
-          <tbody>
-            {loading ? (
-              <tr>
-                <td colSpan="7" style={{ textAlign: 'center', padding: '3rem' }}>
-                  <div className="spinner" style={{ margin: '0 auto', width: '30px', height: '30px' }}></div>
-                </td>
-              </tr>
-            ) : fetchError ? (
-              <tr>
-                <td colSpan="7" style={{ textAlign: 'center', padding: '2rem' }}>
-                  <div style={{ background: 'rgba(239, 68, 68, 0.1)', border: '1px solid rgba(239, 68, 68, 0.3)', borderRadius: '12px', padding: '1.5rem', display: 'inline-block', color: '#f87171' }}>
-                    <p style={{ margin: '0 0 0.5rem 0', fontWeight: 'bold' }}>❌ Error de Conexión</p>
-                    <p style={{ margin: 0, fontSize: '0.9rem' }}>{fetchError}</p>
-                    <button onClick={fetchPolizas} style={{ marginTop: '1rem', background: '#ef4444', color: 'white', border: 'none', padding: '0.5rem 1rem', borderRadius: '6px', cursor: 'pointer' }}>Reintentar</button>
-                  </div>
-                </td>
-              </tr>
-            ) : polizas.length === 0 ? (
-              <tr>
-                <td colSpan="7" style={{ textAlign: 'center', padding: '2rem', color: 'var(--text-secondary)' }}>
-                  No se encontraron pólizas.
-                </td>
-              </tr>
-            ) : (
-              polizas.map(poliza => (
-                <tr key={poliza.id}>
-                  <td style={{ fontWeight: 600, color: '#818cf8' }}>{poliza.nroPza}</td>
-                  <td style={{ fontWeight: 500, color: 'white' }}>{poliza.nombreCliente}</td>
-                  <td>{poliza.nombreCompania}</td>
-                  <td>{poliza.nombreRamo}</td>
-                  <td>
-                    <div style={{ fontSize: '0.8rem' }}>
-                      <span style={{ color: '#34d399' }}>{formatDate(poliza.inicioVigencia)}</span> a <br/>
-                      <span style={{ color: '#f87171' }}>{formatDate(poliza.finVigencia)}</span>
-                    </div>
-                  </td>
-                  <td>{formatCurrency(poliza.prima)}</td>
-                  <td>
-                    <div className="action-buttons">
-                      {poliza.documentoUrl && (
-                        <a 
-                          href={poliza.documentoUrl.startsWith('http') ? poliza.documentoUrl : `${filesUrl}${poliza.documentoUrl}`} 
-                          target="_blank" 
-                          rel="noreferrer"
-                          className="btn-icon" 
-                          title="Descargar PDF"
-                          style={{ background: 'rgba(16, 185, 129, 0.1)', color: '#34d399', border: '1px solid rgba(16, 185, 129, 0.2)', textDecoration: 'none' }}
-                        >
-                          📄
-                        </a>
-                      )}
-                      <button className="btn-icon" title="Compartir" onClick={() => handleShare(poliza)} style={{ background: 'rgba(59, 130, 246, 0.1)', color: '#3b82f6', border: '1px solid rgba(59, 130, 246, 0.2)' }}>
-                        🔗
-                      </button>
-                      <button className="btn-icon edit" title="Editar" onClick={() => handleOpenModal(poliza)}>
-                        ✏️
-                      </button>
-                      <button className="btn-icon delete" title="Anular" onClick={() => handleDelete(poliza.id)}>
-                        🗑️
-                      </button>
-                    </div>
-                  </td>
-                </tr>
-              ))
-            )}
-          </tbody>
-        </table>
+    <div className="flex flex-col gap-6 p-6 pb-20">
+      <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div>
+          <h1 className="text-3xl font-bold tracking-tight">Control de Pólizas</h1>
+          <p className="text-muted-foreground mt-1">Visualiza y gestiona las pólizas de seguros emitidas.</p>
+        </div>
         
-        {/* Controles de Paginación */}
-        {!loading && totalPages > 0 && (
-          <div className="pagination">
-            <span style={{ color: 'var(--text-secondary)', fontSize: '0.875rem' }}>
-              Total: {totalElements} pólizas
-            </span>
-            <div className="pagination-controls">
-              <button 
-                className="btn-page" 
-                disabled={page === 0} 
-                onClick={() => setPage(page - 1)}
-              >
-                Anterior
-              </button>
-              <span style={{ fontWeight: 600 }}>Página {page + 1} de {totalPages}</span>
-              <button 
-                className="btn-page" 
-                disabled={page >= totalPages - 1} 
-                onClick={() => setPage(page + 1)}
-              >
-                Siguiente
-              </button>
-            </div>
-          </div>
-        )}
+        <div className="flex w-full md:w-auto items-center gap-2">
+          <form onSubmit={handleSearch} className="relative w-full md:w-64">
+            <Search className="absolute left-2.5 top-2.5 h-4 w-4 text-muted-foreground" />
+            <Input 
+              type="search" 
+              placeholder="Buscar por número..." 
+              className="pl-9 w-full bg-background"
+              value={searchInput}
+              onChange={(e) => setSearchInput(e.target.value)}
+            />
+          </form>
+          <Button onClick={() => handleOpenModal()} className="shrink-0">
+            <Plus className="mr-2 h-4 w-4" /> Nueva Póliza
+          </Button>
+        </div>
       </div>
+
+      <Card>
+        <CardHeader className="pb-3">
+          <CardTitle>Listado de Pólizas</CardTitle>
+          <CardDescription>
+            {totalElements} pólizas activas.
+          </CardDescription>
+        </CardHeader>
+        <CardContent>
+          <div className="rounded-md border">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>Nro Póliza</TableHead>
+                  <TableHead>Cliente</TableHead>
+                  <TableHead>Aseguradora</TableHead>
+                  <TableHead>Ramo</TableHead>
+                  <TableHead>Vigencia</TableHead>
+                  <TableHead>Prima</TableHead>
+                  <TableHead className="text-right">Acciones</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {isLoading ? (
+                  Array.from({ length: 5 }).map((_, i) => (
+                    <TableRow key={`skeleton-${i}`}>
+                      <TableCell><Skeleton className="h-4 w-[100px]" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-[150px]" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-[100px]" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-[80px]" /></TableCell>
+                      <TableCell><Skeleton className="h-8 w-[120px]" /></TableCell>
+                      <TableCell><Skeleton className="h-4 w-[80px]" /></TableCell>
+                      <TableCell><Skeleton className="h-8 w-[120px] ml-auto" /></TableCell>
+                    </TableRow>
+                  ))
+                ) : isError ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="h-24 text-center text-destructive">
+                      Ocurrió un problema al cargar las pólizas.
+                      <Button variant="outline" size="sm" onClick={() => refetch()} className="ml-4">Reintentar</Button>
+                    </TableCell>
+                  </TableRow>
+                ) : polizas.length === 0 ? (
+                  <TableRow>
+                    <TableCell colSpan={7} className="h-24 text-center text-muted-foreground">
+                      No se encontraron pólizas.
+                    </TableCell>
+                  </TableRow>
+                ) : (
+                  polizas.map((poliza) => (
+                    <TableRow key={poliza.id} className="group">
+                      <TableCell className="font-semibold text-primary">{poliza.nroPza}</TableCell>
+                      <TableCell className="font-medium">{poliza.nombreCliente}</TableCell>
+                      <TableCell>{poliza.nombreCompania}</TableCell>
+                      <TableCell>{poliza.nombreRamo}</TableCell>
+                      <TableCell>
+                        <div className="flex flex-col text-xs space-y-1">
+                          <span className="text-emerald-500 font-medium">Desde: {formatDate(poliza.inicioVigencia)}</span>
+                          <span className="text-rose-500 font-medium">Hasta: {formatDate(poliza.finVigencia)}</span>
+                        </div>
+                      </TableCell>
+                      <TableCell>{formatCurrency(poliza.prima)}</TableCell>
+                      <TableCell className="text-right">
+                        <div className="flex justify-end gap-1">
+                          {poliza.documentoUrl && (
+                            <Button variant="ghost" size="icon" asChild className="text-emerald-500 hover:text-emerald-600 hover:bg-emerald-500/10">
+                              <a href={poliza.documentoUrl.startsWith('http') ? poliza.documentoUrl : `${FILES_URL}${poliza.documentoUrl}`} target="_blank" rel="noreferrer">
+                                <FileText className="h-4 w-4" />
+                              </a>
+                            </Button>
+                          )}
+                          <Button variant="ghost" size="icon" onClick={() => handleShare(poliza)} className="text-blue-500 hover:text-blue-600 hover:bg-blue-500/10">
+                            <LinkIcon className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" onClick={() => handleOpenModal(poliza)}>
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button variant="ghost" size="icon" onClick={() => handleDelete(poliza.id)} className="text-destructive hover:text-destructive hover:bg-destructive/10">
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))
+                )}
+              </TableBody>
+            </Table>
+          </div>
+
+          {!isLoading && totalPages > 0 && (
+            <div className="flex items-center justify-between mt-4">
+              <div className="text-sm text-muted-foreground">
+                Mostrando página {page + 1} de {totalPages}
+              </div>
+              <div className="flex items-center space-x-2">
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  disabled={page === 0} 
+                  onClick={() => setPage(page - 1)}
+                >
+                  <ChevronLeft className="h-4 w-4 mr-1" /> Anterior
+                </Button>
+                <Button 
+                  variant="outline" 
+                  size="sm" 
+                  disabled={page >= totalPages - 1} 
+                  onClick={() => setPage(page + 1)}
+                >
+                  Siguiente <ChevronRight className="h-4 w-4 ml-1" />
+                </Button>
+              </div>
+            </div>
+          )}
+        </CardContent>
+      </Card>
 
       <PolizaModal 
         isOpen={isModalOpen} 
         onClose={handleCloseModal} 
         poliza={polizaEditing} 
-        onSave={fetchPolizas} 
+        onSave={handleSave} 
       />
     </div>
   );
