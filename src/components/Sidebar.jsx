@@ -45,10 +45,10 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
                 to={item.path}
                 onClick={() => setIsOpen(false)}
                 className={({ isActive }) => 
-                  `flex items-center gap-3 px-3 py-2 rounded-md font-medium text-sm transition-colors ${
+                  `flex items-center gap-3 px-3 py-2 rounded-lg font-medium text-sm transition-colors ${
                     isActive 
-                      ? 'bg-zinc-800 text-white' 
-                      : 'text-zinc-400 hover:bg-zinc-800/50 hover:text-zinc-200'
+                      ? 'bg-slate-800/60 text-white border border-slate-700/40 shadow-sm' 
+                      : 'text-slate-400 hover:bg-slate-800/30 hover:text-slate-200 border border-transparent'
                   }`
                 }
               >
