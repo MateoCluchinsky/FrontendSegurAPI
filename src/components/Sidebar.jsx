@@ -43,27 +43,34 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
       {/* Sidebar */}
       <aside className={`
         fixed md:static inset-y-0 left-0 z-50
-        w-64 flex-shrink-0 border-r bg-card flex flex-col 
+        w-64 flex-shrink-0 border-r border-border bg-sidebar flex flex-col 
         transition-transform duration-300 ease-in-out
         ${isOpen ? 'translate-x-0' : '-translate-x-full md:translate-x-0'}
       `}>
-        <div className="h-16 relative flex items-center justify-center px-6 border-b shrink-0">
-          <img 
-            src={logo} 
-            alt="SegurAPI" 
-            className="h-12 w-auto max-w-[180px] object-contain rounded"
-          />
+        <div className="h-16 relative flex items-center justify-center px-4 border-b border-border shrink-0">
+          <div className="bg-[#f4f4f4] rounded-lg px-3 py-1 shadow-xs border border-slate-300/30 max-w-[180px] w-full flex items-center justify-center transition-opacity hover:opacity-95">
+            <img 
+              src={logo} 
+              alt="SegurAPI" 
+              className="h-9 w-auto max-w-[160px] object-contain mix-blend-multiply"
+            />
+          </div>
           <Button 
             variant="ghost" 
             size="icon" 
-            className="absolute right-4 md:hidden" 
+            className="absolute right-3 md:hidden text-muted-foreground hover:text-foreground" 
             onClick={() => setIsOpen(false)}
           >
             <X className="h-5 w-5" />
           </Button>
         </div>
 
-        <nav className="flex-1 overflow-y-auto py-4 px-3 space-y-1">
+        <nav className="flex-1 overflow-y-auto py-5 px-3 space-y-1.5">
+          <div className="px-3 mb-2">
+            <span className="text-[11px] font-semibold text-muted-foreground/60 uppercase tracking-wider">
+              Gestión
+            </span>
+          </div>
           {navItems.map((item) => {
             const Icon = item.icon;
             return (
@@ -72,112 +79,115 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
                 to={item.path}
                 onClick={() => setIsOpen(false)}
                 className={({ isActive }) => 
-                  `flex items-center gap-3 px-3 py-2 rounded-lg font-medium text-sm transition-colors ${
+                  `flex items-center gap-3 px-3.5 py-2.5 rounded-lg font-medium text-sm transition-all duration-150 ${
                     isActive 
-                      ? 'bg-slate-800/60 text-white border border-slate-700/40 shadow-sm' 
-                      : 'text-slate-400 hover:bg-slate-800/30 hover:text-slate-200 border border-transparent'
+                      ? 'bg-card text-foreground border border-border border-l-2 border-l-primary shadow-xs' 
+                      : 'text-muted-foreground hover:bg-card/50 hover:text-foreground border border-transparent'
                   }`
                 }
               >
-                <Icon className="w-5 h-5" />
-                {item.name}
+                {({ isActive }) => (
+                  <>
+                    <Icon className={`w-5 h-5 transition-colors ${isActive ? 'text-primary' : 'text-muted-foreground'}`} />
+                    <span>{item.name}</span>
+                  </>
+                )}
               </NavLink>
             )
           })}
         </nav>
 
-        {/* Footer con los tres íconos fijados en la parte inferior */}
-        <div className="p-3 border-t bg-card/60 flex items-center justify-around gap-1 shrink-0">
-          {/* Cambiar Tema */}
-          <Button 
-            variant="ghost" 
-            size="icon" 
-            onClick={toggleTheme} 
-            className="text-muted-foreground hover:text-foreground cursor-pointer"
-            title={theme === 'dark' ? 'Modo claro' : 'Modo oscuro'}
-          >
-            {theme === 'dark' ? <Sun className="h-5 w-5" /> : <Moon className="h-5 w-5" />}
-          </Button>
-
-          {/* Notificaciones */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
+        {/* Footer con los dos niveles acordados */}
+        <div className="p-3 border-t border-border bg-sidebar shrink-0 flex flex-col gap-2">
+          {/* Nivel 1: Acciones rápidas (Tema y Notificaciones) */}
+          <div className="flex items-center justify-between px-1">
+            <span className="text-[11px] font-medium text-muted-foreground/70">Preferencias</span>
+            <div className="flex items-center gap-1">
+              {/* Cambiar Tema */}
               <Button 
                 variant="ghost" 
                 size="icon" 
-                className="relative text-muted-foreground hover:text-foreground cursor-pointer"
-                title="Notificaciones"
+                onClick={toggleTheme} 
+                className="h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-card/60 cursor-pointer rounded-md transition-all duration-150 active:scale-95"
+                title={theme === 'dark' ? 'Modo claro' : 'Modo oscuro'}
               >
-                <Bell className="h-5 w-5" />
-                {unreadCount > 0 && (
-                  <span className="absolute top-1.5 right-1.5 h-2.5 w-2.5 rounded-full bg-destructive border-2 border-background animate-pulse"></span>
-                )}
+                {theme === 'dark' ? <Sun className="h-4 w-4" /> : <Moon className="h-4 w-4" />}
               </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent side="top" align="center" sideOffset={8} className="w-80">
-              <DropdownMenuLabel className="flex justify-between items-center">
-                <span>Notificaciones</span>
-                {unreadCount > 0 && <span className="text-xs font-normal text-muted-foreground">{unreadCount} nuevas</span>}
-              </DropdownMenuLabel>
-              <DropdownMenuSeparator />
-              <div className="max-h-80 overflow-y-auto">
-                {notifications.length === 0 ? (
-                  <div className="p-4 text-center text-sm text-muted-foreground">
-                    No tienes notificaciones
-                  </div>
-                ) : (
-                  notifications.map(notif => (
-                    <DropdownMenuItem 
-                      key={notif.id} 
-                      className={`flex flex-col items-start gap-1 p-3 cursor-pointer ${!notif.leida ? 'bg-muted/50' : ''}`}
-                      onClick={() => handleNotificationClick(notif)}
-                    >
-                      <div className="flex items-center gap-2">
-                        {!notif.leida && <div className="h-1.5 w-1.5 rounded-full bg-primary shrink-0" />}
-                        <span className="font-medium text-sm">{notif.titulo}</span>
+
+              {/* Notificaciones */}
+              <DropdownMenu>
+                <DropdownMenuTrigger asChild>
+                  <Button 
+                    variant="ghost" 
+                    size="icon" 
+                    className="relative h-8 w-8 text-muted-foreground hover:text-foreground hover:bg-card/60 cursor-pointer rounded-md transition-all duration-150 active:scale-95"
+                    title="Notificaciones"
+                  >
+                    <Bell className="h-4 w-4" />
+                    {unreadCount > 0 && (
+                      <span className="absolute top-1 right-1 h-2 w-2 rounded-full bg-destructive border-2 border-sidebar animate-pulse"></span>
+                    )}
+                  </Button>
+                </DropdownMenuTrigger>
+                <DropdownMenuContent side="top" align="end" sideOffset={8} className="w-80">
+                  <DropdownMenuLabel className="flex justify-between items-center">
+                    <span>Notificaciones</span>
+                    {unreadCount > 0 && <span className="text-xs font-normal text-muted-foreground">{unreadCount} nuevas</span>}
+                  </DropdownMenuLabel>
+                  <DropdownMenuSeparator />
+                  <div className="max-h-80 overflow-y-auto">
+                    {notifications.length === 0 ? (
+                      <div className="p-4 text-center text-sm text-muted-foreground">
+                        No tienes notificaciones
                       </div>
-                      <span className="text-xs text-muted-foreground line-clamp-2 ml-3">{notif.mensaje}</span>
-                      <span className="text-[10px] text-muted-foreground/70 mt-1 ml-3">{new Date(notif.fechaCreacion).toLocaleString()}</span>
-                    </DropdownMenuItem>
-                  ))
-                )}
-              </div>
-            </DropdownMenuContent>
-          </DropdownMenu>
+                    ) : (
+                      notifications.map(notif => (
+                        <DropdownMenuItem 
+                          key={notif.id} 
+                          className={`flex flex-col items-start gap-1 p-3 cursor-pointer ${!notif.leida ? 'bg-muted/50' : ''}`}
+                          onClick={() => handleNotificationClick(notif)}
+                        >
+                          <div className="flex items-center gap-2">
+                            {!notif.leida && <div className="h-1.5 w-1.5 rounded-full bg-primary shrink-0" />}
+                            <span className="font-medium text-sm">{notif.titulo}</span>
+                          </div>
+                          <span className="text-xs text-muted-foreground line-clamp-2 ml-3">{notif.mensaje}</span>
+                          <span className="text-[10px] text-muted-foreground/70 mt-1 ml-3">{new Date(notif.fechaCreacion).toLocaleString()}</span>
+                        </DropdownMenuItem>
+                      ))
+                    )}
+                  </div>
+                </DropdownMenuContent>
+              </DropdownMenu>
+            </div>
+          </div>
 
-          {/* Avatar / Usuario y Cerrar sesión */}
-          <DropdownMenu>
-            <DropdownMenuTrigger asChild>
-              <Button 
-                variant="ghost" 
-                size="icon" 
-                className="group relative rounded-full p-0 cursor-pointer text-muted-foreground hover:text-foreground"
-                title="Usuario"
-              >
-                <div className="flex h-9 w-9 items-center justify-center rounded-full bg-muted text-muted-foreground group-hover:bg-accent group-hover:text-foreground transition-colors text-sm font-medium border border-border group-hover:border-foreground/20">
-                  {userInitial}
-                </div>
-              </Button>
-            </DropdownMenuTrigger>
-            <DropdownMenuContent side="top" align="end" sideOffset={8} className="w-56">
-              <div className="flex items-center justify-start gap-2 p-2">
-                <div className="flex flex-col space-y-1 leading-none">
-                  {user?.nombre && <p className="font-medium text-foreground">{user.nombre}</p>}
-                  <p className="w-[180px] truncate text-sm text-muted-foreground">
-                    {user?.email}
-                  </p>
-                </div>
+          {/* Nivel 2: Fila de usuario tipo SaaS con información real */}
+          <div className="flex items-center justify-between gap-2.5 p-2 rounded-lg bg-card/40 border border-border/60 hover:border-border/90 transition-colors duration-150">
+            <div className="flex items-center gap-2.5 min-w-0 flex-1">
+              <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-muted text-foreground text-xs font-semibold shrink-0 border border-border">
+                {userInitial}
               </div>
-              <DropdownMenuSeparator />
-              <DropdownMenuItem 
-                onClick={logout} 
-                className="text-destructive cursor-pointer hover:bg-destructive/10 hover:text-destructive focus:bg-destructive/10 focus:text-destructive"
-              >
-                <LogOut className="mr-2 h-4 w-4" />
-                <span>Cerrar sesión</span>
-              </DropdownMenuItem>
-            </DropdownMenuContent>
-          </DropdownMenu>
+              <div className="flex flex-col min-w-0">
+                <span className="text-xs font-medium text-foreground truncate">
+                  {user?.nombre || user?.email || 'Usuario'}
+                </span>
+                <span className="text-[11px] text-muted-foreground truncate">
+                  {user?.rol || user?.email || ''}
+                </span>
+              </div>
+            </div>
+            
+            <Button
+              variant="ghost"
+              size="icon"
+              onClick={logout}
+              className="h-8 w-8 text-muted-foreground hover:text-destructive hover:bg-destructive/10 rounded-md shrink-0 cursor-pointer transition-all duration-150 active:scale-95"
+              title="Cerrar sesión"
+            >
+              <LogOut className="h-4 w-4" />
+            </Button>
+          </div>
         </div>
       </aside>
     </>

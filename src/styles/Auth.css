@@ -1,3 +1,11 @@
+:root {
+  --primary-color: #3b5af6;
+  --primary-hover: #297eff;
+  --text-secondary: #94a3b8;
+  --error-color: #ef4444;
+  --success-color: #10b981;
+}
+
 .auth-container {
   display: flex;
   justify-content: center;
@@ -80,21 +88,26 @@
 
 .auth-btn {
   background: var(--primary-color);
-  color: white;
+  color: #ffffff;
   border: none;
-  padding: 1rem;
+  padding: 0.875rem 1.25rem;
   border-radius: 12px;
-  font-size: 1rem;
+  font-size: 0.95rem;
   font-weight: 600;
   cursor: pointer;
   transition: all 0.2s ease;
   margin-top: 0.5rem;
+
 }
 
 .auth-btn:hover:not(:disabled) {
   background: var(--primary-hover);
-  transform: translateY(-2px);
-  box-shadow: 0 10px 15px -3px rgba(79, 70, 229, 0.4);
+  transform: translateY(-1px);
+  box-shadow: 0 6px 18px rgba(18, 66, 143, 0.4);
+}
+
+.auth-btn:active:not(:disabled) {
+  transform: translateY(0);
 }
 
 .auth-btn:disabled {
