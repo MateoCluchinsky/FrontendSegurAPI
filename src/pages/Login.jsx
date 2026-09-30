@@ -2,6 +2,7 @@ import { useState, useContext } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import api from '../services/api';
 import { AuthContext } from '../context/AuthContext';
+import logo from '../assets/logo.jpg';
 import '../styles/Auth.css';
 
 const Login = () => {
@@ -44,8 +45,13 @@ const Login = () => {
     <div className="auth-container">
       <div className="auth-card glass-panel">
         <div className="auth-header">
+          <img 
+            src={logo} 
+            alt="SegurAPI Logo" 
+            className="h-16 w-auto max-w-[240px] object-contain mx-auto mb-4 rounded-lg shadow-sm"
+          />
           <h2>Bienvenido de nuevo</h2>
-          <p>Ingresa a tu cuenta de Insuralytic</p>
+          <p>Ingresa a tu cuenta de SegurAPI</p>
         </div>
         
         {error && <div className="auth-error">{error}</div>}
