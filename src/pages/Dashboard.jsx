@@ -2,8 +2,22 @@ import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { getDashboardStats } from '../services/dashboardService';
 import { getPolizas } from '../services/polizaService';
-import { ResponsiveContainer, AreaChart, Area, BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, Legend } from 'recharts';
-import { Users, DollarSign, ShieldCheck, AlertTriangle } from 'lucide-react';
+import { 
+  ResponsiveContainer, 
+  AreaChart, 
+  Area, 
+  BarChart, 
+  Bar, 
+  PieChart, 
+  Pie, 
+  Cell, 
+  XAxis, 
+  YAxis, 
+  CartesianGrid, 
+  Tooltip, 
+  Legend 
+} from 'recharts';
+import { Users, DollarSign, ShieldCheck, AlertTriangle, TrendingUp, BarChart2 } from 'lucide-react';
 import { Card, CardContent, CardHeader, CardTitle } from '../components/ui/card';
 
 const formatCurrency = (value) => {
@@ -24,10 +38,24 @@ const MonthlyTooltip = ({ active, payload }) => {
   if (active && payload && payload.length) {
     const data = payload[0].payload;
     return (
-      <div className="bg-card text-foreground border border-border rounded-lg p-2.5 text-xs shadow-md">
-        <p className="font-semibold text-foreground mb-1">{data.mes}</p>
-        <p className="text-muted-foreground">Primas: <span className="text-foreground font-medium tabular-nums">{formatCurrency(data.prima)}</span></p>
-        <p className="text-muted-foreground">Pólizas: <span className="text-foreground font-medium tabular-nums">{formatNumber(data.cantidad)}</span></p>
+      <div className="bg-card text-foreground border border-border rounded-lg p-3 text-xs shadow-lg min-w-[170px]">
+        <p className="font-semibold text-foreground mb-2 pb-1.5 border-b border-border/60">{data.mes}</p>
+        <div className="space-y-1.5">
+          <div className="flex items-center justify-between gap-4">
+            <span className="flex items-center gap-1.5 text-muted-foreground">
+              <span className="h-2 w-2 rounded-full bg-primary shrink-0" />
+              Primas:
+            </span>
+            <span className="text-foreground font-semibold tabular-nums">{formatCurrency(data.prima)}</span>
+          </div>
+          <div className="flex items-center justify-between gap-4">
+            <span className="flex items-center gap-1.5 text-muted-foreground">
+              <span className="h-2 w-2 rounded-full bg-slate-400 shrink-0" />
+              Pólizas:
+            </span>
+            <span className="text-foreground font-semibold tabular-nums">{formatNumber(data.cantidad)}</span>
+          </div>
+        </div>
       </div>
     );
   }
@@ -70,20 +98,23 @@ const Dashboard = () => {
   if (loading) {
     return (
       <div className="space-y-6">
-        <div className="flex flex-col gap-1">
-          <div className="h-7 w-36 bg-muted animate-pulse rounded-md"></div>
-          <div className="h-4 w-72 bg-muted/60 animate-pulse rounded-md mt-1"></div>
+        <div className="flex items-center gap-3">
+          <div className="h-7 w-36 bg-muted/60 animate-pulse rounded-md"></div>
+          <div className="h-4 w-72 bg-muted/40 animate-pulse rounded-md"></div>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
           {[1, 2, 3, 4].map((i) => (
-            <Card key={i} className="bg-card border border-border rounded-xl p-4 flex flex-col justify-between animate-pulse shadow-none">
-              <div className="h-3.5 w-1/2 bg-muted rounded mb-3"></div>
-              <div className="h-7 w-3/4 bg-muted rounded"></div>
+            <Card key={i} className="bg-card border border-border rounded-lg p-5 flex flex-col justify-between animate-pulse shadow-xs min-h-[132px]">
+              <div className="flex items-center justify-between">
+                <div className="h-3 w-24 bg-muted/60 rounded"></div>
+                <div className="h-4 w-4 bg-muted/50 rounded"></div>
+              </div>
+              <div className="h-8 w-28 bg-muted/70 rounded mt-4"></div>
             </Card>
           ))}
         </div>
-        <div className="inline-flex p-1 bg-muted border border-border rounded-lg gap-1 mb-4 h-9 w-72 animate-pulse"></div>
-        <Card className="bg-card border border-border rounded-xl p-5 animate-pulse h-[360px] shadow-none"></Card>
+        <div className="inline-flex p-1 bg-card border border-border/80 rounded-lg gap-1 mb-4 h-10 w-72 animate-pulse shadow-xs"></div>
+        <Card className="bg-card border border-border rounded-xl p-5 animate-pulse h-[360px] shadow-xs"></Card>
       </div>
     );
   }
@@ -184,8 +215,9 @@ const Dashboard = () => {
 
   return (
     <div className="space-y-6">
-      <div className="flex flex-col gap-1">
+      <div className="flex items-center gap-3 flex-wrap">
         <h1 className="text-2xl font-semibold tracking-tight text-foreground">Dashboard</h1>
+        <span className="text-muted-foreground/40 hidden sm:inline">-</span>
         <p className="text-sm text-muted-foreground">Resumen general y métricas principales de SegurAPI.</p>
       </div>
 
@@ -198,61 +230,55 @@ const Dashboard = () => {
       {/* KPI Cards */}
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
         {/* Total de Clientes */}
-        <Card className="bg-card border border-border rounded-xl p-4 flex flex-col justify-between shadow-sm hover:border-border/80 transition-colors">
-          <CardHeader className="p-0 flex flex-row items-center justify-between text-muted-foreground text-xs font-medium space-y-0">
-            <CardTitle className="text-xs font-medium text-muted-foreground">Total de Clientes</CardTitle>
-            <div className="w-8 h-8 rounded-lg bg-muted border border-border flex items-center justify-center text-muted-foreground">
-              <Users className="h-4 w-4" />
-            </div>
+        <Card className="group bg-card border border-border rounded-lg p-5 flex flex-col justify-between shadow-xs hover:-translate-y-0.5 hover:shadow-md hover:border-slate-600/60 hover:bg-card-hover transition-all duration-200 ease-out min-h-[132px]">
+          <CardHeader className="p-0 flex flex-row items-center justify-between text-muted-foreground space-y-0">
+            <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Total de Clientes</CardTitle>
+            <Users className="h-5 w-5 text-sky-400 group-hover:scale-105 transition-transform duration-200 shrink-0" />
           </CardHeader>
-          <CardContent className="p-0 mt-3">
-            <div className="text-2xl font-semibold text-foreground tracking-tight tabular-nums">{formatNumber(totalClientes)}</div>
+          <CardContent className="p-0 mt-4">
+            <div className="text-3xl font-bold text-foreground tracking-tight tabular-nums">{formatNumber(totalClientes)}</div>
           </CardContent>
         </Card>
         
         {/* Primas Acumuladas */}
-        <Card className="bg-card border border-border rounded-xl p-4 flex flex-col justify-between shadow-sm hover:border-border/80 transition-colors">
-          <CardHeader className="p-0 flex flex-row items-center justify-between text-muted-foreground text-xs font-medium space-y-0">
-            <CardTitle className="text-xs font-medium text-muted-foreground">Primas Acumuladas</CardTitle>
-            <div className="w-8 h-8 rounded-lg bg-muted border border-border flex items-center justify-center text-muted-foreground">
-              <DollarSign className="h-4 w-4" />
-            </div>
+        <Card className="group bg-card border border-border rounded-lg p-5 flex flex-col justify-between shadow-xs hover:-translate-y-0.5 hover:shadow-md hover:border-slate-600/60 hover:bg-card-hover transition-all duration-200 ease-out min-h-[132px]">
+          <CardHeader className="p-0 flex flex-row items-center justify-between text-muted-foreground space-y-0">
+            <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Primas Acumuladas</CardTitle>
+            <DollarSign className="h-5 w-5 text-emerald-400 group-hover:scale-105 transition-transform duration-200 shrink-0" />
           </CardHeader>
-          <CardContent className="p-0 mt-3">
-            <div className="text-2xl font-semibold text-foreground tracking-tight tabular-nums">{formatCurrency(primas)}</div>
+          <CardContent className="p-0 mt-4">
+            <div className="text-2xl sm:text-3xl font-bold text-foreground tracking-tight tabular-nums">{formatCurrency(primas)}</div>
           </CardContent>
         </Card>
         
         {/* Pólizas Activas */}
-        <Card className="bg-card border border-border rounded-xl p-4 flex flex-col justify-between shadow-sm hover:border-border/80 transition-colors">
-          <CardHeader className="p-0 flex flex-row items-center justify-between text-muted-foreground text-xs font-medium space-y-0">
-            <CardTitle className="text-xs font-medium text-muted-foreground">Pólizas Activas</CardTitle>
-            <div className="w-8 h-8 rounded-lg bg-muted border border-border flex items-center justify-center text-muted-foreground">
-              <ShieldCheck className="h-4 w-4" />
-            </div>
+        <Card className="group bg-card border border-border rounded-lg p-5 flex flex-col justify-between shadow-xs hover:-translate-y-0.5 hover:shadow-md hover:border-slate-600/60 hover:bg-card-hover transition-all duration-200 ease-out min-h-[132px]">
+          <CardHeader className="p-0 flex flex-row items-center justify-between text-muted-foreground space-y-0">
+            <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Pólizas Activas</CardTitle>
+            <ShieldCheck className="h-5 w-5 text-blue-400 group-hover:scale-105 transition-transform duration-200 shrink-0" />
           </CardHeader>
-          <CardContent className="p-0 mt-3">
-            <div className="text-2xl font-semibold text-foreground tracking-tight tabular-nums">{formatNumber(polizasActivas)}</div>
+          <CardContent className="p-0 mt-4">
+            <div className="text-3xl font-bold text-foreground tracking-tight tabular-nums">{formatNumber(polizasActivas)}</div>
           </CardContent>
         </Card>
         
         {/* Próximos Vencimientos */}
-        <Card className="bg-card border border-border rounded-xl p-4 flex flex-col justify-between shadow-sm hover:border-border/80 transition-colors">
-          <CardHeader className="p-0 flex flex-row items-center justify-between text-muted-foreground text-xs font-medium space-y-0">
-            <CardTitle className="text-xs font-medium text-muted-foreground">Próximos Vencimientos</CardTitle>
-            <div className="w-8 h-8 rounded-lg bg-muted border border-border flex items-center justify-center text-muted-foreground">
-              <AlertTriangle className="h-4 w-4" />
-            </div>
+        <Card className="group bg-card border border-border rounded-lg p-5 flex flex-col justify-between shadow-xs hover:-translate-y-0.5 hover:shadow-md hover:border-slate-600/60 hover:bg-card-hover transition-all duration-200 ease-out min-h-[132px]">
+          <CardHeader className="p-0 flex flex-row items-center justify-between text-muted-foreground space-y-0">
+            <CardTitle className="text-xs font-medium text-muted-foreground uppercase tracking-wider">Próximos Vencimientos</CardTitle>
+            <AlertTriangle className="h-5 w-5 text-amber-400 group-hover:scale-105 transition-transform duration-200 shrink-0" />
           </CardHeader>
-          <CardContent className="p-0 mt-3">
-            <div className="text-2xl font-semibold text-rose-500 tracking-tight tabular-nums">{formatNumber(proximosVencimientos)}</div>
-            <p className="text-xs text-muted-foreground mt-1">En los próximos 30 días</p>
+          <CardContent className="p-0 mt-4">
+            <div className={`text-3xl font-bold tracking-tight tabular-nums ${proximosVencimientos > 0 ? 'text-rose-400' : 'text-foreground'}`}>
+              {formatNumber(proximosVencimientos)}
+            </div>
+            <p className="text-xs text-muted-foreground mt-1.5">En los próximos 30 días</p>
           </CardContent>
         </Card>
       </div>
 
-      {/* Tabs */}
-      <div className="inline-flex p-1 bg-muted border border-border rounded-lg gap-1 mb-4">
+      {/* Tabs con estilo pill sutil */}
+      <div className="inline-flex p-1 bg-card border border-border/80 rounded-lg gap-1 mb-4 shadow-xs">
         {[
           { id: 'timeline', label: 'Emisión de Pólizas' },
           { id: 'companies', label: 'Compañías' },
@@ -261,11 +287,11 @@ const Dashboard = () => {
           <button
             key={tab.id}
             onClick={() => setActiveTab(tab.id)}
-            className={
+            className={`rounded-md px-4 py-2 text-xs font-medium transition-all duration-200 active:scale-[0.98] cursor-pointer ${
               activeTab === tab.id 
-                ? 'bg-background text-foreground font-medium shadow-sm border border-border rounded-md px-3.5 py-1.5 text-xs'
-                : 'text-muted-foreground hover:text-foreground hover:bg-background/50 rounded-md px-3.5 py-1.5 text-xs transition-colors'
-            }
+                ? 'bg-card-hover text-foreground font-semibold shadow-xs border border-white/10'
+                : 'text-muted-foreground hover:text-foreground hover:bg-card-hover/30 border border-transparent'
+            }`}
           >
             {tab.label}
           </button>
@@ -273,38 +299,47 @@ const Dashboard = () => {
       </div>
 
       {/* Charts */}
-      <Card className="bg-card border border-border rounded-xl p-5 shadow-sm">
-        <CardHeader className="p-0 mb-4">
-          <div className="flex items-center justify-between">
-            <CardTitle className="text-sm font-medium text-foreground">
-              {activeTab === 'timeline' && 'Emisión de Pólizas'}
-              {activeTab === 'companies' && 'Distribución por Compañía'}
-              {activeTab === 'distribution' && 'Composición de Cartera'}
-            </CardTitle>
+      <Card className="bg-card border border-border rounded-xl p-6 shadow-xs hover:border-slate-700/60 transition-colors duration-200">
+        <CardHeader className="p-0 mb-6">
+          <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3">
+            <div>
+              <CardTitle className="text-base font-semibold text-foreground tracking-tight">
+                {activeTab === 'timeline' && 'Emisión de Pólizas'}
+                {activeTab === 'companies' && 'Distribución por Compañía'}
+                {activeTab === 'distribution' && 'Composición de Cartera'}
+              </CardTitle>
+              <p className="text-xs text-muted-foreground mt-0.5">
+                {activeTab === 'timeline' && 'Evolución mensual de primas emitidas por período'}
+                {activeTab === 'companies' && 'Volumen de pólizas agrupadas por aseguradora'}
+                {activeTab === 'distribution' && 'Desglose proporcional por ramo y método de cobro'}
+              </p>
+            </div>
 
             {activeTab === 'timeline' && (
-              <div className="inline-flex p-0.5 bg-muted border border-border rounded-md gap-0.5">
+              <div className="inline-flex p-1 bg-background/80 border border-border rounded-lg gap-1 shrink-0 self-start sm:self-auto">
                 <button
                   type="button"
                   onClick={() => setChartType('line')}
-                  className={`rounded-md px-2.5 py-1 text-xs transition-colors ${
+                  className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium cursor-pointer transition-all duration-150 active:scale-95 ${
                     chartType === 'line'
-                      ? 'bg-background text-foreground font-medium shadow-sm border border-border'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-background/50'
+                      ? 'bg-card text-foreground shadow-xs border border-border font-semibold'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-card/40'
                   }`}
                 >
-                  Línea
+                  <TrendingUp className="h-3.5 w-3.5" />
+                  <span>Línea</span>
                 </button>
                 <button
                   type="button"
                   onClick={() => setChartType('bar')}
-                  className={`rounded-md px-2.5 py-1 text-xs transition-colors ${
+                  className={`inline-flex items-center gap-1.5 rounded-md px-3 py-1.5 text-xs font-medium cursor-pointer transition-all duration-150 active:scale-95 ${
                     chartType === 'bar'
-                      ? 'bg-background text-foreground font-medium shadow-sm border border-border'
-                      : 'text-muted-foreground hover:text-foreground hover:bg-background/50'
+                      ? 'bg-card text-foreground shadow-xs border border-border font-semibold'
+                      : 'text-muted-foreground hover:text-foreground hover:bg-card/40'
                   }`}
                 >
-                  Barras
+                  <BarChart2 className="h-3.5 w-3.5" />
+                  <span>Barras</span>
                 </button>
               </div>
             )}
@@ -313,11 +348,11 @@ const Dashboard = () => {
         <CardContent className="p-0">
           
           {activeTab === 'timeline' && (
-            <div className="w-full h-[320px]">
+            <div className="w-full h-[340px]">
               {monthlyTimelineData.length > 0 ? (
                 <ResponsiveContainer width="100%" height="100%">
                   {chartType === 'line' ? (
-                    <AreaChart data={monthlyTimelineData} margin={{ top: 15, right: 15, left: 10, bottom: 10 }}>
+                    <AreaChart data={monthlyTimelineData} margin={{ top: 10, right: 10, left: -10, bottom: 0 }}>
                       <defs>
                         <linearGradient id="lineAnchorGradient" x1="0" y1="0" x2="0" y2="1">
                           <stop offset="0%" stopColor="#3b82f6" stopOpacity={0.15} />
@@ -326,27 +361,27 @@ const Dashboard = () => {
                       </defs>
                       <CartesianGrid strokeDasharray="3 3" className="stroke-border" vertical={false} />
                       <XAxis dataKey="mes" className="text-muted-foreground" fontSize={11} tickLine={false} axisLine={false} tickMargin={8} tick={{ fill: 'currentColor' }} />
-                      <YAxis className="text-muted-foreground" fontSize={11} tickLine={false} axisLine={false} tickFormatter={(v) => `$${v/1000}k`} tick={{ fill: 'currentColor' }} />
+                      <YAxis className="text-muted-foreground" fontSize={11} tickLine={false} axisLine={false} tickMargin={8} tickFormatter={(v) => `$${v/1000}k`} tick={{ fill: 'currentColor' }} />
                       <Tooltip content={<MonthlyTooltip />} />
                       <Area
-                        type="linear"
+                        type="monotone"
                         dataKey="prima"
                         name="Primas"
                         stroke="#3b82f6"
-                        strokeWidth={1.5}
+                        strokeWidth={2}
                         fill="url(#lineAnchorGradient)"
                         fillOpacity={1}
-                        dot={{ r: 3, fill: '#3b82f6', stroke: 'currentColor', strokeWidth: 1.5 }}
-                        activeDot={{ r: 5, fill: '#3b82f6', stroke: 'currentColor', strokeWidth: 2 }}
+                        dot={{ r: 3, fill: '#3b82f6', stroke: 'hsl(var(--card))', strokeWidth: 1.5 }}
+                        activeDot={{ r: 5, fill: '#3b82f6', stroke: 'hsl(var(--card))', strokeWidth: 2 }}
                       />
                     </AreaChart>
                   ) : (
                     <BarChart data={monthlyTimelineData} margin={{ top: 15, right: 15, left: 10, bottom: 10 }}>
                       <CartesianGrid strokeDasharray="3 3" className="stroke-border" vertical={false} />
                       <XAxis dataKey="mes" className="text-muted-foreground" fontSize={11} tickLine={false} axisLine={false} tickMargin={8} tick={{ fill: 'currentColor' }} />
-                      <YAxis className="text-muted-foreground" fontSize={11} tickLine={false} axisLine={false} tickFormatter={(v) => `$${v/1000}k`} tick={{ fill: 'currentColor' }} />
+                      <YAxis className="text-muted-foreground" fontSize={11} tickLine={false} axisLine={false} tickMargin={8} tickFormatter={(v) => `$${v/1000}k`} tick={{ fill: 'currentColor' }} />
                       <Tooltip content={<MonthlyTooltip />} cursor={{ className: 'fill-muted/40' }} />
-                      <Bar dataKey="prima" name="Primas" fill="#3b82f6" radius={[2, 2, 0, 0]} maxBarSize={36} />
+                      <Bar dataKey="prima" name="Primas" fill="#3b82f6" radius={[4, 4, 0, 0]} maxBarSize={36} />
                     </BarChart>
                   )}
                 </ResponsiveContainer>
@@ -369,7 +404,7 @@ const Dashboard = () => {
                       contentStyle={{ backgroundColor: 'hsl(var(--card))', borderColor: 'hsl(var(--border))', borderRadius: '8px', color: 'hsl(var(--foreground))', fontSize: '12px' }}
                       itemStyle={{ color: '#3b82f6', fontWeight: '500' }}
                     />
-                    <Bar dataKey="cantidad" name="Pólizas" fill="#3b82f6" radius={[2, 2, 0, 0]} maxBarSize={36} />
+                    <Bar dataKey="cantidad" name="Pólizas" fill="#3b82f6" radius={[4, 4, 0, 0]} maxBarSize={36} />
                   </BarChart>
                 </ResponsiveContainer>
               ) : (
@@ -381,7 +416,7 @@ const Dashboard = () => {
           {activeTab === 'distribution' && (
             <div className="grid md:grid-cols-2 gap-8 h-auto min-h-[350px]">
               <div className="flex flex-col items-center">
-                <h4 className="text-xs font-medium text-muted-foreground mb-2">Composición por Ramo</h4>
+                <h4 className="text-xs font-medium text-muted-foreground mb-4">Composición por Ramo</h4>
                 {pieRamos.length > 0 ? (
                   <div className="w-full h-[280px]">
                     <ResponsiveContainer width="100%" height="100%">
@@ -421,7 +456,7 @@ const Dashboard = () => {
               </div>
 
               <div className="flex flex-col items-center">
-                <h4 className="text-xs font-medium text-muted-foreground mb-2">Medios de Pago</h4>
+                <h4 className="text-xs font-medium text-muted-foreground mb-4">Medios de Pago</h4>
                 {piePagos.length > 0 ? (
                   <div className="w-full h-[280px]">
                     <ResponsiveContainer width="100%" height="100%">

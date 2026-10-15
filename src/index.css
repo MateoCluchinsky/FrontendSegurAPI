@@ -11,8 +11,12 @@
     --foreground: 222.2 84% 4.9%;
     --card: 0 0% 100%;
     --card-foreground: 222.2 84% 4.9%;
+    --card-hover: 210 40% 97%;
     --popover: 0 0% 100%;
     --popover-foreground: 222.2 84% 4.9%;
+    --sidebar: 0 0% 98%;
+    --sidebar-foreground: 222.2 84% 4.9%;
+    --sidebar-border: 214.3 31.8% 91.4%;
     --primary: 221.2 83.2% 53.3%;
     --primary-foreground: 210 40% 98%;
     --secondary: 210 40% 96.1%;
@@ -30,25 +34,45 @@
   }
 
   .dark {
-    --background: 222.2 84% 4.9%;
+    /* Background general: #070F1F */
+    --background: 220 63% 7.5%;
     --foreground: 210 40% 98%;
-    --card: 222.2 84% 4.9%;
+
+    /* Sidebar: #050B17 */
+    --sidebar: 220 64% 5.5%;
+    --sidebar-foreground: 210 40% 98%;
+    --sidebar-border: 218 38% 18.2%;
+
+    /* Cards / Containers: #0D172A */
+    --card: 219 53% 10.8%;
     --card-foreground: 210 40% 98%;
-    --popover: 222.2 84% 4.9%;
+
+    /* Hover de cards: #111D33 */
+    --card-hover: 219 50% 13.3%;
+
+    --popover: 219 53% 10.8%;
     --popover-foreground: 210 40% 98%;
+
+    /* Primary/accent: #3B82F6 */
     --primary: 217.2 91.2% 59.8%;
-    --primary-foreground: 222.2 47.4% 11.2%;
-    --secondary: 217.2 32.6% 17.5%;
+    --primary-foreground: 210 40% 98%;
+
+    --secondary: 218 51% 12%;
     --secondary-foreground: 210 40% 98%;
-    --muted: 217.2 32.6% 17.5%;
+
+    --muted: 218 51% 12%;
     --muted-foreground: 215 20.2% 65.1%;
-    --accent: 217.2 32.6% 17.5%;
+
+    --accent: 219 50% 13.3%;
     --accent-foreground: 210 40% 98%;
+
     --destructive: 0 62.8% 30.6%;
     --destructive-foreground: 210 40% 98%;
-    --border: 217.2 32.6% 17.5%;
-    --input: 217.2 32.6% 17.5%;
-    --ring: 212.7 26.8% 83.9%;
+
+    /* Borders: #1D2A40 */
+    --border: 218 38% 18.2%;
+    --input: 218 38% 18.2%;
+    --ring: 217.2 91.2% 59.8%;
   }
 }
 
@@ -60,5 +84,8 @@
     background-color: hsl(var(--background));
     color: hsl(var(--foreground));
     font-family: 'Inter', sans-serif;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+    text-rendering: optimizeLegibility;
   }
 }
