@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getPolizas, deletePoliza } from '../services/polizaService';
-import { FILES_URL } from '../services/api';
+import { BACKEND_URL } from '../services/api';
 import PolizaModal from '../components/PolizaModal';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
@@ -191,7 +191,7 @@ const Polizas = () => {
                         <div className="flex justify-end gap-1">
                           {poliza.documentoUrl && (
                             <Button variant="ghost" size="icon" asChild className="text-emerald-500 hover:text-emerald-600 hover:bg-emerald-500/10">
-                              <a href={poliza.documentoUrl.startsWith('http') ? poliza.documentoUrl : `${FILES_URL}${poliza.documentoUrl}`} target="_blank" rel="noreferrer">
+                              <a href={poliza.documentoUrl.startsWith('http') ? poliza.documentoUrl : `${BACKEND_URL}${poliza.documentoUrl.startsWith('/') ? '' : '/'}${poliza.documentoUrl}`} target="_blank" rel="noreferrer">
                                 <FileText className="h-4 w-4" />
                               </a>
                             </Button>

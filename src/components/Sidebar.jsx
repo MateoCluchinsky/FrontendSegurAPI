@@ -74,8 +74,8 @@ const Sidebar = ({ isOpen, setIsOpen }) => {
                 className={({ isActive }) => 
                   `flex items-center gap-3 px-3 py-2 rounded-lg font-medium text-sm transition-colors ${
                     isActive 
-                      ? 'bg-slate-800/60 text-white border border-slate-700/40 shadow-sm' 
-                      : 'text-slate-400 hover:bg-slate-800/30 hover:text-slate-200 border border-transparent'
+                      ? 'bg-primary text-primary-foreground shadow-sm' 
+                      : 'text-muted-foreground hover:bg-accent hover:text-accent-foreground'
                   }`
                 }
               >

@@ -1,7 +1,10 @@
 import { useState } from 'react';
 import { useNavigate, useLocation, Link } from 'react-router-dom';
 import api from '../services/api';
-import '../styles/Auth.css';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
 
 const Verificar = () => {
   const navigate = useNavigate();
@@ -39,50 +42,70 @@ const Verificar = () => {
   };
 
   return (
-    <div className="auth-container">
-      <div className="auth-card glass-panel">
-        <div className="auth-header">
-          <h2>Verificar Cuenta</h2>
-          <p>Ingresa el código que enviamos a tu correo</p>
-        </div>
+    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <Card className="w-full max-w-md shadow-xl border-border bg-card">
+        <CardHeader className="text-center space-y-2">
+          <CardTitle className="text-2xl font-bold tracking-tight text-foreground">
+            Verificar Cuenta
+          </CardTitle>
+          <CardDescription className="text-muted-foreground">
+            Ingresa el código de 6 dígitos que enviamos a tu correo
+          </CardDescription>
+        </CardHeader>
         
-        {error && <div className="auth-error">{error}</div>}
-        {success && <div className="auth-success">{success}</div>}
-        
-        <form onSubmit={handleSubmit} className="auth-form">
-          <div className="form-group">
-            <label htmlFor="email">Email</label>
-            <input 
-              type="email" 
-              id="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="tu@email.com"
-              required 
-            />
-          </div>
+        <CardContent>
+          {error && (
+            <div className="mb-4 p-3 rounded-md bg-destructive/10 text-destructive text-sm font-medium border border-destructive/20">
+              {error}
+            </div>
+          )}
+          {success && (
+            <div className="mb-4 p-3 rounded-md bg-emerald-500/10 text-emerald-600 dark:text-emerald-400 text-sm font-medium border border-emerald-500/20">
+              {success}
+            </div>
+          )}
           
-          <div className="form-group">
-            <label htmlFor="codigo">Código</label>
-            <input 
-              type="text" 
-              id="codigo"
-              value={codigo}
-              onChange={(e) => setCodigo(e.target.value)}
-              placeholder="Ej. 123456"
-              required 
-            />
-          </div>
-          
-          <button type="submit" className="auth-btn" disabled={loading || !!success}>
-            {loading ? 'Verificando...' : 'Verificar'}
-          </button>
-        </form>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input 
+                type="email" 
+                id="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="tu@email.com"
+                required 
+                className="bg-background"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="codigo">Código de Verificación</Label>
+              <Input 
+                type="text" 
+                id="codigo"
+                value={codigo}
+                onChange={(e) => setCodigo(e.target.value)}
+                placeholder="Ej. 123456"
+                required 
+                className="bg-background tracking-widest text-center text-lg font-mono"
+              />
+            </div>
+            
+            <Button type="submit" className="w-full mt-2" disabled={loading || !!success}>
+              {loading ? 'Verificando...' : 'Verificar Cuenta'}
+            </Button>
+          </form>
+        </CardContent>
         
-        <div className="auth-footer">
-          <p><Link to="/login">Volver al Login</Link></p>
-        </div>
-      </div>
+        <CardFooter className="flex justify-center border-t border-border pt-4">
+          <p className="text-sm text-muted-foreground">
+            <Link to="/login" className="text-primary font-medium hover:underline">
+              Volver al Login
+            </Link>
+          </p>
+        </CardFooter>
+      </Card>
     </div>
   );
 };

@@ -1,7 +1,6 @@
 import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getClientesPaginados, deleteCliente } from '../services/clienteService';
-import { FILES_URL } from '../services/api';
 import ClienteModal from '../components/ClienteModal';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
@@ -9,7 +8,7 @@ import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { Search, Plus, Edit, Trash2, ChevronLeft, ChevronRight, User } from 'lucide-react';
+import { Search, Plus, Edit, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 
 const Clientes = () => {
   const queryClient = useQueryClient();
@@ -150,21 +149,8 @@ const Clientes = () => {
                   clientes.map((cliente) => (
                     <TableRow key={cliente.id} className="group">
                       <TableCell className="text-center">
-                        {cliente.fotoUrl ? (
-                          <img 
-                            src={`${FILES_URL}/${cliente.fotoUrl}`} 
-                            alt={cliente.nombre} 
-                            className="h-10 w-10 rounded-full object-cover mx-auto"
-                            onError={(e) => { 
-                              e.target.onerror = null; 
-                              e.target.src = ''; 
-                              e.target.className = 'hidden'; 
-                              e.target.nextSibling.classList.remove('hidden');
-                            }}
-                          />
-                        ) : null}
-                        <div className={`h-10 w-10 rounded-full bg-muted flex items-center justify-center mx-auto ${cliente.fotoUrl ? 'hidden' : ''}`}>
-                          <User className="h-5 w-5 text-muted-foreground" />
+                        <div className="h-10 w-10 rounded-full bg-primary/10 text-primary font-semibold flex items-center justify-center mx-auto text-xs">
+                          {`${cliente.nombre?.charAt(0) || ''}${cliente.apellido?.charAt(0) || ''}`}
                         </div>
                       </TableCell>
                       <TableCell className="font-medium">{cliente.nombre} {cliente.apellido}</TableCell>

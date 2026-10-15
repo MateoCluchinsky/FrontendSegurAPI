@@ -17,7 +17,7 @@ import Perfil from './pages/Perfil';
 
 
 
-import { Toaster } from 'sonner';
+import { Toaster } from './components/ui/sonner';
 import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 
 const queryClient = new QueryClient({

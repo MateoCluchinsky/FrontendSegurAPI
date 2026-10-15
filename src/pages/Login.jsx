@@ -3,7 +3,10 @@ import { useNavigate, Link } from 'react-router-dom';
 import api from '../services/api';
 import { AuthContext } from '../context/AuthContext';
 import logo from '../assets/logo.jpg';
-import '../styles/Auth.css';
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from '@/components/ui/card';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Button } from '@/components/ui/button';
 
 const Login = () => {
   const [email, setEmail] = useState('');
@@ -22,7 +25,6 @@ const Login = () => {
     try {
       const response = await api.post('/auth/login', { email, password });
       
-      // Manejar la estructura de respuesta (se asume que trae un 'token')
       const token = response.data?.token || response.data;
       const userData = response.data?.user || null;
       
@@ -42,54 +44,71 @@ const Login = () => {
   };
 
   return (
-    <div className="auth-container">
-      <div className="auth-card glass-panel">
-        <div className="auth-header">
+    <div className="min-h-screen flex items-center justify-center bg-background p-4">
+      <Card className="w-full max-w-md shadow-xl border-border bg-card">
+        <CardHeader className="text-center space-y-2">
           <img 
             src={logo} 
             alt="SegurAPI Logo" 
-            className="h-16 w-auto max-w-[240px] object-contain mx-auto mb-4 rounded-lg shadow-sm"
+            className="h-16 w-auto max-w-[200px] object-contain mx-auto mb-2 rounded-lg shadow-sm"
           />
-          <h2>Bienvenido de nuevo</h2>
-          <p>Ingresa a tu cuenta de SegurAPI</p>
-        </div>
+          <CardTitle className="text-2xl font-bold tracking-tight text-foreground">
+            Bienvenido de nuevo
+          </CardTitle>
+          <CardDescription className="text-muted-foreground">
+            Ingresa a tu cuenta de SegurAPI
+          </CardDescription>
+        </CardHeader>
         
-        {error && <div className="auth-error">{error}</div>}
-        
-        <form onSubmit={handleSubmit} className="auth-form">
-          <div className="form-group">
-            <label htmlFor="email">Email</label>
-            <input 
-              type="email" 
-              id="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="tu@email.com"
-              required 
-            />
-          </div>
+        <CardContent>
+          {error && (
+            <div className="mb-4 p-3 rounded-md bg-destructive/10 text-destructive text-sm font-medium border border-destructive/20">
+              {error}
+            </div>
+          )}
           
-          <div className="form-group">
-            <label htmlFor="password">Contraseña</label>
-            <input 
-              type="password" 
-              id="password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              placeholder="••••••••"
-              required 
-            />
-          </div>
-          
-          <button type="submit" className="auth-btn" disabled={loading}>
-            {loading ? 'Iniciando...' : 'Iniciar Sesión'}
-          </button>
-        </form>
+          <form onSubmit={handleSubmit} className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input 
+                type="email" 
+                id="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="tu@email.com"
+                required 
+                className="bg-background"
+              />
+            </div>
+            
+            <div className="space-y-2">
+              <Label htmlFor="password">Contraseña</Label>
+              <Input 
+                type="password" 
+                id="password"
+                value={password}
+                onChange={(e) => setPassword(e.target.value)}
+                placeholder="••••••••"
+                required 
+                className="bg-background"
+              />
+            </div>
+            
+            <Button type="submit" className="w-full mt-2" disabled={loading}>
+              {loading ? 'Iniciando...' : 'Iniciar Sesión'}
+            </Button>
+          </form>
+        </CardContent>
         
-        <div className="auth-footer">
-          <p>¿No tienes una cuenta? <Link to="/registro">Regístrate aquí</Link></p>
-        </div>
-      </div>
+        <CardFooter className="flex justify-center border-t border-border pt-4">
+          <p className="text-sm text-muted-foreground">
+            ¿No tienes una cuenta?{' '}
+            <Link to="/registro" className="text-primary font-medium hover:underline">
+              Regístrate aquí
+            </Link>
+          </p>
+        </CardFooter>
+      </Card>
     </div>
   );
 };

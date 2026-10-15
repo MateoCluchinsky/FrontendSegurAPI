@@ -1,6 +1,8 @@
 import { useState } from 'react';
 import { descargarExcelPolizas } from '../services/reporteService';
-import '../styles/Dashboard.css';
+import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { FileSpreadsheet, Download, Loader2 } from 'lucide-react';
 
 const Reportes = () => {
   const [loading, setLoading] = useState(false);
@@ -28,59 +30,48 @@ const Reportes = () => {
   };
 
   return (
-    <div className="page-container fade-in">
-      <div className="page-header">
-        <h1 className="page-title">Reportes y Estadísticas</h1>
-        <p className="page-description">Generación de informes exportables y análisis de datos de tus carteras.</p>
+    <div className="flex flex-col gap-6 p-6 pb-20">
+      <div>
+        <h1 className="text-3xl font-bold tracking-tight text-foreground">Reportes y Estadísticas</h1>
+        <p className="text-muted-foreground mt-1">Generación de informes exportables y análisis de datos de tus carteras.</p>
       </div>
 
       {error && (
-        <div className="auth-error" style={{ marginBottom: '1.5rem' }}>
+        <div className="p-4 rounded-md bg-destructive/10 text-destructive text-sm font-medium border border-destructive/20">
           {error}
         </div>
       )}
 
-      <div className="charts-grid" style={{ gridTemplateColumns: 'repeat(auto-fit, minmax(300px, 1fr))' }}>
-        <div className="chart-card" style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', textAlign: 'center', padding: '3rem 2rem' }}>
-          <div className="kpi-icon" style={{ background: 'linear-gradient(135deg, rgba(16, 185, 129, 0.2), rgba(110, 231, 183, 0.2))', color: '#34d399', marginBottom: '1.5rem', width: '80px', height: '80px', fontSize: '3rem' }}>
-            📊
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <Card className="flex flex-col items-center text-center p-8 border-border bg-card">
+          <div className="p-5 rounded-2xl bg-emerald-500/10 text-emerald-500 mb-4">
+            <FileSpreadsheet className="h-12 w-12" />
           </div>
-          <h3 style={{ color: 'white', marginBottom: '1rem', fontSize: '1.5rem' }}>Reporte General de Pólizas</h3>
-          <p style={{ color: 'var(--text-secondary)', marginBottom: '2rem' }}>
+          <CardHeader className="p-0 mb-3">
+            <CardTitle className="text-2xl font-bold text-foreground">Reporte General de Pólizas</CardTitle>
+          </CardHeader>
+          <CardContent className="p-0 mb-6 text-muted-foreground text-sm max-w-md">
             Descarga un documento Excel completo con el detalle de todas las pólizas activas en tu cartera agrupadas por cliente, listo para presentar o analizar.
-          </p>
+          </CardContent>
           
-          <button 
+          <Button 
             onClick={handleDownloadExcel} 
             disabled={loading}
-            style={{
-              background: loading ? 'rgba(59, 130, 246, 0.5)' : '#3b82f6',
-              color: 'white',
-              border: 'none',
-              padding: '1rem 2.5rem',
-              borderRadius: '8px',
-              fontSize: '1.05rem',
-              fontWeight: '600',
-              cursor: loading ? 'not-allowed' : 'pointer',
-              display: 'flex',
-              alignItems: 'center',
-              gap: '0.75rem',
-              transition: 'all 0.3s ease',
-              boxShadow: '0 4px 6px -1px rgba(0, 0, 0, 0.2)'
-            }}
-            onMouseOver={(e) => !loading && (e.currentTarget.style.transform = 'translateY(-2px)')}
-            onMouseOut={(e) => !loading && (e.currentTarget.style.transform = 'none')}
+            className="gap-2 px-8 py-6 text-base font-semibold shadow-md"
           >
             {loading ? (
               <>
-                <div className="spinner" style={{ width: '20px', height: '20px', borderTopColor: 'white', margin: 0 }}></div>
-                Generando...
+                <Loader2 className="h-5 w-5 animate-spin" />
+                Generando reporte...
               </>
             ) : (
-              '📄 Generar y Descargar Excel'
+              <>
+                <Download className="h-5 w-5" />
+                Generar y Descargar Excel
+              </>
             )}
-          </button>
-        </div>
+          </Button>
+        </Card>
       </div>
     </div>
   );

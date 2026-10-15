@@ -130,15 +130,30 @@ const PolizaModal = ({ isOpen, onClose, poliza, onSave }) => {
       toast.error("Debe seleccionar un cliente de la lista.");
       return;
     }
+
+    if (formData.inicioVigencia && formData.finVigencia && formData.finVigencia <= formData.inicioVigencia) {
+      toast.error("La fecha de fin de vigencia debe ser posterior a la de inicio");
+      return;
+    }
+
+    const payload = {
+      ...formData,
+      clienteId: Number(formData.clienteId),
+      ramoId: Number(formData.ramoId),
+      companiaId: Number(formData.companiaId),
+      prima: parseFloat(formData.prima),
+      premio: parseFloat(formData.premio),
+    };
+
     setLoading(true);
 
     try {
       let savedPoliza;
       if (poliza && poliza.id) {
-        savedPoliza = await updatePoliza(poliza.id, formData);
+        savedPoliza = await updatePoliza(poliza.id, payload);
         toast.success("Póliza actualizada exitosamente.");
       } else {
-        savedPoliza = await createPoliza(formData);
+        savedPoliza = await createPoliza(payload);
         toast.success("Póliza creada exitosamente.");
       }
 

@@ -1,6 +1,6 @@
 /* eslint-disable react-hooks/set-state-in-effect */
 import { useState, useEffect } from 'react';
-import { createCliente, updateCliente, uploadFotoCliente, getLocalidades } from '../services/clienteService';
+import { createCliente, updateCliente, getLocalidades } from '../services/clienteService';
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogFooter } from '@/components/ui/dialog';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -23,7 +23,6 @@ const ClienteModal = ({ isOpen, onClose, cliente, onSave }) => {
     localidadId: '', telefono: '', email: '', dni: '', sexo: '', tipoIva: ''
   });
   const [localidades, setLocalidades] = useState([]);
-  const [fotoFile, setFotoFile] = useState(null);
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
@@ -52,13 +51,11 @@ const ClienteModal = ({ isOpen, onClose, cliente, onSave }) => {
         sexo: cliente.sexo || '',
         tipoIva: cliente.tipoIva || ''
       });
-      setFotoFile(null);
     } else {
       setFormData({
         nombre: '', apellido: '', fechaNacimiento: '', direccion: '',
         localidadId: '', telefono: '', email: '', dni: '', sexo: '', tipoIva: ''
       });
-      setFotoFile(null);
     }
   }, [cliente, isOpen]);
 
@@ -70,29 +67,22 @@ const ClienteModal = ({ isOpen, onClose, cliente, onSave }) => {
     setFormData({ ...formData, [name]: value });
   };
 
-  const handleFileChange = (e) => {
-    if (e.target.files && e.target.files[0]) {
-      setFotoFile(e.target.files[0]);
-    }
-  };
-
   const handleSubmit = async (e) => {
     e.preventDefault();
     setLoading(true);
 
     try {
-      let savedCliente;
+      const payload = {
+        ...formData,
+        localidadId: Number(formData.localidadId)
+      };
+
       if (cliente && cliente.id) {
-        savedCliente = await updateCliente(cliente.id, formData);
+        await updateCliente(cliente.id, payload);
         toast.success("Cliente actualizado exitosamente.");
       } else {
-        savedCliente = await createCliente(formData);
+        await createCliente(payload);
         toast.success("Cliente creado exitosamente.");
-      }
-
-      const targetId = savedCliente?.id || cliente?.id;
-      if (fotoFile && targetId) {
-        await uploadFotoCliente(targetId, fotoFile);
       }
 
       onSave(); 
@@ -190,11 +180,6 @@ const ClienteModal = ({ isOpen, onClose, cliente, onSave }) => {
             <div className="grid gap-2">
               <Label htmlFor="direccion">Dirección</Label>
               <Input id="direccion" name="direccion" value={formData.direccion} onChange={handleChange} placeholder="Calle 123" />
-            </div>
-            
-            <div className="grid gap-2 md:col-span-2">
-              <Label htmlFor="foto">Foto de Perfil</Label>
-              <Input id="foto" type="file" accept="image/*" onChange={handleFileChange} />
             </div>
           </div>
           

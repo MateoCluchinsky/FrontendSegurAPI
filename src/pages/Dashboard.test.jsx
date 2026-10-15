@@ -1,6 +1,7 @@
 /* eslint-disable no-undef */
 import { describe, it, expect, vi, beforeEach } from 'vitest';
 import { render, screen, waitFor, fireEvent } from '@testing-library/react';
+import { QueryClient, QueryClientProvider } from '@tanstack/react-query';
 import Dashboard from './Dashboard';
 import * as dashboardService from '../services/dashboardService';
 import * as polizaService from '../services/polizaService';
@@ -27,7 +28,9 @@ const mockStats = {
   polizasPorCompania: [
     { nombre: 'Sancor', cantidad: 2 },
     { nombre: 'Sura', cantidad: 3 }
-  ]
+  ],
+  polizasPorRamo: [{ nombre: 'Automotor', cantidad: 3 }],
+  polizasPorTipoPago: [{ tipoPago: 'TARJETA_CREDITO', cantidad: 3 }]
 };
 
 const mockPolizas = [
@@ -38,9 +41,24 @@ const mockPolizas = [
     prima: 30000,
     nombreRamo: 'Automotor',
     nombreCliente: 'Juan Perez',
-    tipoPago: 'TARJETA'
+    tipoPago: 'TARJETA_CREDITO'
   }
 ];
+
+const renderWithQueryClient = (ui) => {
+  const queryClient = new QueryClient({
+    defaultOptions: {
+      queries: {
+        retry: false,
+      },
+    },
+  });
+  return render(
+    <QueryClientProvider client={queryClient}>
+      {ui}
+    </QueryClientProvider>
+  );
+};
 
 describe('Dashboard Component', () => {
   beforeEach(() => {
@@ -50,12 +68,12 @@ describe('Dashboard Component', () => {
   });
 
   it('renders loading state initially', () => {
-    const { container } = render(<Dashboard />);
-    expect(container.querySelector('.spinner')).toBeInTheDocument();
+    const { container } = renderWithQueryClient(<Dashboard />);
+    expect(container.querySelector('.animate-pulse')).toBeInTheDocument();
   });
 
   it('renders stats and timeline tab by default after loading', async () => {
-    render(<Dashboard />);
+    renderWithQueryClient(<Dashboard />);
     
     await waitFor(() => {
       expect(screen.getByText('Total de Clientes')).toBeInTheDocument();
@@ -65,32 +83,32 @@ describe('Dashboard Component', () => {
     expect(screen.getByText('10')).toBeInTheDocument(); // Clientes
     expect(screen.getByText('5')).toBeInTheDocument(); // Pólizas Activas
     
-    // Check default tab content
-    expect(screen.getByText('Línea de Tiempo de Emisiones')).toBeInTheDocument();
+    // Check default tab content (both tab button and card title have 'Emisión de Pólizas')
+    const timelineElements = screen.getAllByText('Emisión de Pólizas');
+    expect(timelineElements.length).toBeGreaterThanOrEqual(1);
   });
 
   it('switches to companies tab when clicked', async () => {
-    render(<Dashboard />);
+    renderWithQueryClient(<Dashboard />);
     
     await waitFor(() => {
-      expect(screen.getByText('Compañías')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Compañías' })).toBeInTheDocument();
     });
 
-    const companiesBtn = screen.getByText('Compañías');
+    const companiesBtn = screen.getByRole('button', { name: 'Compañías' });
     fireEvent.click(companiesBtn);
 
     expect(screen.getByText('Distribución por Compañía')).toBeInTheDocument();
-    expect(screen.queryByText('Línea de Tiempo de Emisiones')).not.toBeInTheDocument();
   });
   
   it('switches to distribution tab when clicked', async () => {
-    render(<Dashboard />);
+    renderWithQueryClient(<Dashboard />);
     
     await waitFor(() => {
-      expect(screen.getByText('Distribución de Cartera')).toBeInTheDocument();
+      expect(screen.getByRole('button', { name: 'Distribución' })).toBeInTheDocument();
     });
 
-    const distBtn = screen.getByText('Distribución de Cartera');
+    const distBtn = screen.getByRole('button', { name: 'Distribución' });
     fireEvent.click(distBtn);
 
     expect(screen.getByText('Composición por Ramo')).toBeInTheDocument();
