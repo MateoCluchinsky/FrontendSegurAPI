@@ -74,7 +74,7 @@ const ClienteModal = ({ isOpen, onClose, cliente, onSave }) => {
     try {
       const payload = {
         ...formData,
-        localidadId: Number(formData.localidadId)
+        localidadId: formData.localidadId ? Number(formData.localidadId) : null
       };
 
       if (cliente && cliente.id) {
@@ -119,13 +119,13 @@ const ClienteModal = ({ isOpen, onClose, cliente, onSave }) => {
             </div>
             
             <div className="grid gap-2">
-              <Label htmlFor="email">Email *</Label>
-              <Input id="email" type="email" name="email" value={formData.email} onChange={handleChange} required placeholder="maria@ejemplo.com" />
+              <Label htmlFor="email">Email</Label>
+              <Input id="email" type="email" name="email" value={formData.email} onChange={handleChange} placeholder="maria@ejemplo.com" />
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="fechaNacimiento">Fecha de Nacimiento *</Label>
-              <Input id="fechaNacimiento" type="date" name="fechaNacimiento" value={formData.fechaNacimiento} onChange={handleChange} required />
+              <Label htmlFor="fechaNacimiento">Fecha de Nacimiento</Label>
+              <Input id="fechaNacimiento" type="date" name="fechaNacimiento" value={formData.fechaNacimiento} onChange={handleChange} />
             </div>
 
             <div className="grid gap-2">
@@ -162,8 +162,8 @@ const ClienteModal = ({ isOpen, onClose, cliente, onSave }) => {
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="localidadId">Localidad *</Label>
-              <Select value={formData.localidadId} onValueChange={(v) => handleSelectChange('localidadId', v)} required>
+              <Label htmlFor="localidadId">Localidad</Label>
+              <Select value={formData.localidadId} onValueChange={(v) => handleSelectChange('localidadId', v)}>
                 <SelectTrigger>
                   <SelectValue placeholder="Seleccione Localidad" />
                 </SelectTrigger>

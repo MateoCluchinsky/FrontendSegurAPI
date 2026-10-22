@@ -3,13 +3,21 @@ import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getPolizas, deletePoliza } from '../services/polizaService';
 import { BACKEND_URL } from '../services/api';
 import PolizaModal from '../components/PolizaModal';
+import ImportarCarteraModal from '../components/ImportarCarteraModal';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { toast } from 'sonner';
-import { Search, Plus, Edit, Trash2, ChevronLeft, ChevronRight, FileText, Link as LinkIcon } from 'lucide-react';
+import { Search, Plus, Edit, Trash2, ChevronLeft, ChevronRight, FileText, Link as LinkIcon, FileSpreadsheet, ArrowUpDown, Filter, FilterX } from 'lucide-react';
 
 const Polizas = () => {
   const queryClient = useQueryClient();
@@ -18,13 +26,22 @@ const Polizas = () => {
   const [size] = useState(10);
   const [filtroNroPza, setFiltroNroPza] = useState('');
   const [searchInput, setSearchInput] = useState('');
+  const [sort, setSort] = useState('premio,desc');
+  const [ocultarPremioCero, setOcultarPremioCero] = useState(false);
 
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [polizaEditing, setPolizaEditing] = useState(null);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
 
   const { data, isLoading, isError, refetch } = useQuery({
-    queryKey: ['polizas', page, size, filtroNroPza],
-    queryFn: () => getPolizas({ page, size, nroPza: filtroNroPza }),
+    queryKey: ['polizas', page, size, filtroNroPza, sort, ocultarPremioCero],
+    queryFn: () => getPolizas({
+      page,
+      size,
+      nroPza: filtroNroPza,
+      sort,
+      ocultarPremioCero: ocultarPremioCero || undefined,
+    }),
   });
 
   const content = data?.content || data?.data || data || [];
@@ -120,6 +137,13 @@ const Polizas = () => {
               onChange={(e) => setSearchInput(e.target.value)}
             />
           </form>
+          <Button 
+            variant="outline" 
+            onClick={() => setIsImportModalOpen(true)} 
+            className="shrink-0 border-emerald-500/30 hover:border-emerald-500 hover:bg-emerald-500/10 text-foreground"
+          >
+            <FileSpreadsheet className="mr-2 h-4 w-4 text-emerald-500" /> Importar Cartera (Excel)
+          </Button>
           <Button onClick={() => handleOpenModal()} className="shrink-0">
             <Plus className="mr-2 h-4 w-4" /> Nueva Póliza
           </Button>
@@ -128,10 +152,58 @@ const Polizas = () => {
 
       <Card>
         <CardHeader className="pb-3">
-          <CardTitle>Listado de Pólizas</CardTitle>
-          <CardDescription>
-            {totalElements} pólizas activas.
-          </CardDescription>
+          <div className="flex flex-col sm:flex-row justify-between sm:items-center gap-3">
+            <div>
+              <CardTitle>Listado de Pólizas</CardTitle>
+              <CardDescription>
+                {totalElements} pólizas activas.
+              </CardDescription>
+            </div>
+            
+            <div className="flex flex-wrap items-center gap-2">
+              <Select 
+                value={sort} 
+                onValueChange={(val) => { 
+                  setSort(val); 
+                  setPage(0); 
+                }}
+              >
+                <SelectTrigger className="w-[170px] h-9 text-xs bg-background">
+                  <ArrowUpDown className="mr-1.5 h-3.5 w-3.5 text-muted-foreground shrink-0" />
+                  <SelectValue placeholder="Ordenar por" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="premio,desc">Mayor Premio</SelectItem>
+                  <SelectItem value="premio,asc">Menor Premio</SelectItem>
+                  <SelectItem value="finVigencia,asc">Próximas a vencer</SelectItem>
+                  <SelectItem value="id,desc">Más recientes</SelectItem>
+                </SelectContent>
+              </Select>
+
+              <Button 
+                type="button" 
+                variant={ocultarPremioCero ? "default" : "outline"} 
+                size="sm"
+                onClick={() => {
+                  setOcultarPremioCero(prev => !prev);
+                  setPage(0);
+                }}
+                className={`h-9 px-3 text-xs font-medium shrink-0 transition-colors ${
+                  ocultarPremioCero 
+                    ? 'bg-amber-600 hover:bg-amber-700 text-white border-amber-600' 
+                    : 'text-muted-foreground hover:text-foreground'
+                }`}
+                title="Oculta pólizas con premio en $0 (ej. Vida Obligatorio)"
+              >
+                {ocultarPremioCero ? (
+                  <FilterX className="mr-1.5 h-3.5 w-3.5" />
+                ) : (
+                  <Filter className="mr-1.5 h-3.5 w-3.5" />
+                )}
+                Ocultar pólizas en $0
+              </Button>
+            </div>
+          </div>
         </CardHeader>
         <CardContent>
           <div className="rounded-md border">
@@ -143,7 +215,7 @@ const Polizas = () => {
                   <TableHead>Aseguradora</TableHead>
                   <TableHead>Ramo</TableHead>
                   <TableHead>Vigencia</TableHead>
-                  <TableHead>Prima</TableHead>
+                  <TableHead>Premio</TableHead>
                   <TableHead className="text-right">Acciones</TableHead>
                 </TableRow>
               </TableHeader>
@@ -176,17 +248,41 @@ const Polizas = () => {
                 ) : (
                   polizas.map((poliza) => (
                     <TableRow key={poliza.id} className="group">
-                      <TableCell className="font-semibold text-primary">{poliza.nroPza}</TableCell>
+                      <TableCell className="font-semibold text-primary">
+                        <div className="flex items-center gap-1.5 flex-wrap">
+                          <span>{poliza.nroPza}</span>
+                          {poliza.nroEndoso > 0 && (
+                            <span className="inline-flex items-center px-1.5 py-0.5 rounded text-[10px] font-medium bg-muted text-muted-foreground border border-border">
+                              End. #{poliza.nroEndoso}
+                            </span>
+                          )}
+                        </div>
+                      </TableCell>
                       <TableCell className="font-medium">{poliza.nombreCliente}</TableCell>
                       <TableCell>{poliza.nombreCompania}</TableCell>
-                      <TableCell>{poliza.nombreRamo}</TableCell>
+                      <TableCell>
+                        <div>
+                          <span>{poliza.nombreRamo}</span>
+                          {poliza.bienAsegurado && (
+                            <span className="block text-xs text-muted-foreground truncate max-w-[180px]" title={poliza.bienAsegurado}>
+                              {poliza.bienAsegurado}
+                            </span>
+                          )}
+                        </div>
+                      </TableCell>
                       <TableCell>
                         <div className="flex flex-col text-xs space-y-1">
                           <span className="text-emerald-500 font-medium">Desde: {formatDate(poliza.inicioVigencia)}</span>
                           <span className="text-rose-500 font-medium">Hasta: {formatDate(poliza.finVigencia)}</span>
                         </div>
                       </TableCell>
-                      <TableCell>{formatCurrency(poliza.prima)}</TableCell>
+                      <TableCell>
+                        {poliza.premio === 0 || poliza.premio == null || Number(poliza.premio) === 0 ? (
+                          <span className="text-xs text-muted-foreground">S/D ($0 en origen)</span>
+                        ) : (
+                          formatCurrency(poliza.premio)
+                        )}
+                      </TableCell>
                       <TableCell className="text-right">
                         <div className="flex justify-end gap-1">
                           {poliza.documentoUrl && (
@@ -247,6 +343,11 @@ const Polizas = () => {
         onClose={handleCloseModal} 
         poliza={polizaEditing} 
         onSave={handleSave} 
+      />
+
+      <ImportarCarteraModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
       />
     </div>
   );

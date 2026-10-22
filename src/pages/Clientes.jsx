@@ -2,13 +2,14 @@ import { useState } from 'react';
 import { useQuery, useMutation, useQueryClient } from '@tanstack/react-query';
 import { getClientesPaginados, deleteCliente } from '../services/clienteService';
 import ClienteModal from '../components/ClienteModal';
+import ImportarCarteraModal from '../components/ImportarCarteraModal';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Skeleton } from '@/components/ui/skeleton';
 import { Card, CardContent, CardHeader, CardTitle, CardDescription } from '@/components/ui/card';
 import { toast } from 'sonner';
-import { Search, Plus, Edit, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
+import { Search, Plus, Edit, Trash2, ChevronLeft, ChevronRight, FileSpreadsheet } from 'lucide-react';
 
 const Clientes = () => {
   const queryClient = useQueryClient();
@@ -22,6 +23,7 @@ const Clientes = () => {
   // Modal State
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [clienteEditing, setClienteEditing] = useState(null);
+  const [isImportModalOpen, setIsImportModalOpen] = useState(false);
 
   // UseQuery para obtener clientes
   const { data, isLoading, isError, refetch } = useQuery({
@@ -94,6 +96,13 @@ const Clientes = () => {
               onChange={(e) => setSearchInput(e.target.value)}
             />
           </form>
+          <Button 
+            variant="outline" 
+            onClick={() => setIsImportModalOpen(true)} 
+            className="shrink-0 border-emerald-500/30 hover:border-emerald-500 hover:bg-emerald-500/10 text-foreground"
+          >
+            <FileSpreadsheet className="mr-2 h-4 w-4 text-emerald-500" /> Importar Cartera (Excel)
+          </Button>
           <Button onClick={() => handleOpenModal()} className="shrink-0">
             <Plus className="mr-2 h-4 w-4" /> Añadir Cliente
           </Button>
@@ -150,11 +159,13 @@ const Clientes = () => {
                     <TableRow key={cliente.id} className="group">
                       <TableCell className="text-center">
                         <div className="h-10 w-10 rounded-full bg-primary/10 text-primary font-semibold flex items-center justify-center mx-auto text-xs">
-                          {`${cliente.nombre?.charAt(0) || ''}${cliente.apellido?.charAt(0) || ''}`}
+                          {`${cliente.nombre && cliente.nombre !== '-' ? cliente.nombre.charAt(0) : ''}${cliente.apellido?.charAt(0) || ''}`}
                         </div>
                       </TableCell>
-                      <TableCell className="font-medium">{cliente.nombre} {cliente.apellido}</TableCell>
-                      <TableCell>{cliente.email}</TableCell>
+                      <TableCell className="font-medium">
+                        {cliente.nombre === '-' ? cliente.apellido : `${cliente.nombre || ''} ${cliente.apellido || ''}`.trim()}
+                      </TableCell>
+                      <TableCell>{cliente.email ? cliente.email : '-'}</TableCell>
                       <TableCell>{cliente.telefono || '-'}</TableCell>
                       <TableCell>{cliente.dni || '-'}</TableCell>
                       <TableCell className="text-right">
@@ -207,6 +218,11 @@ const Clientes = () => {
         onClose={handleCloseModal} 
         cliente={clienteEditing} 
         onSave={handleSave} 
+      />
+
+      <ImportarCarteraModal
+        isOpen={isImportModalOpen}
+        onClose={() => setIsImportModalOpen(false)}
       />
     </div>
   );

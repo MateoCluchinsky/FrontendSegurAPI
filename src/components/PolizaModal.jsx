@@ -23,7 +23,7 @@ const PolizaModal = ({ isOpen, onClose, poliza, onSave }) => {
   const [formData, setFormData] = useState({
     nroPza: '', clienteId: '', tipoPago: '', inicioVigencia: '',
     finVigencia: '', ramoId: '', companiaId: '', tipoFacturacion: '',
-    prima: '', premio: ''
+    premio: '', bienAsegurado: ''
   });
 
   const [archivoFile, setArchivoFile] = useState(null);
@@ -64,8 +64,8 @@ const PolizaModal = ({ isOpen, onClose, poliza, onSave }) => {
         ramoId: String(poliza.ramoId || ''),
         companiaId: String(poliza.companiaId || ''),
         tipoFacturacion: poliza.tipoFacturacion || '',
-        prima: poliza.prima || '',
-        premio: poliza.premio || ''
+        premio: poliza.premio || '',
+        bienAsegurado: poliza.bienAsegurado || ''
       });
       setSelectedClientName(poliza.nombreCliente || '');
       setClientSearchQuery('');
@@ -74,7 +74,7 @@ const PolizaModal = ({ isOpen, onClose, poliza, onSave }) => {
       setFormData({
         nroPza: '', clienteId: '', tipoPago: '', inicioVigencia: '',
         finVigencia: '', ramoId: '', companiaId: '', tipoFacturacion: '',
-        prima: '', premio: ''
+        premio: '', bienAsegurado: ''
       });
       setSelectedClientName('');
       setClientSearchQuery('');
@@ -141,7 +141,6 @@ const PolizaModal = ({ isOpen, onClose, poliza, onSave }) => {
       clienteId: Number(formData.clienteId),
       ramoId: Number(formData.ramoId),
       companiaId: Number(formData.companiaId),
-      prima: parseFloat(formData.prima),
       premio: parseFloat(formData.premio),
     };
 
@@ -242,6 +241,8 @@ const PolizaModal = ({ isOpen, onClose, poliza, onSave }) => {
                   <SelectItem value="EFECTIVO">Efectivo</SelectItem>
                   <SelectItem value="TARJETA_CREDITO">Tarjeta de Crédito</SelectItem>
                   <SelectItem value="TARJETA_DEBITO">Tarjeta de Débito</SelectItem>
+                  <SelectItem value="DEBITO_CBU">Débito Automático (CBU)</SelectItem>
+                  <SelectItem value="NO_ESPECIFICADO">No Especificado</SelectItem>
                 </SelectContent>
               </Select>
             </div>
@@ -285,11 +286,6 @@ const PolizaModal = ({ isOpen, onClose, poliza, onSave }) => {
             </div>
 
             <div className="grid gap-2">
-              <Label htmlFor="prima">Prima *</Label>
-              <Input id="prima" type="number" step="0.01" name="prima" value={formData.prima} onChange={handleChange} required />
-            </div>
-
-            <div className="grid gap-2">
               <Label htmlFor="premio">Premio *</Label>
               <Input id="premio" type="number" step="0.01" name="premio" value={formData.premio} onChange={handleChange} required />
             </div>
@@ -297,6 +293,11 @@ const PolizaModal = ({ isOpen, onClose, poliza, onSave }) => {
             <div className="grid gap-2">
               <Label htmlFor="tipoFacturacion">Tipo Facturación</Label>
               <Input id="tipoFacturacion" name="tipoFacturacion" value={formData.tipoFacturacion} onChange={handleChange} placeholder="Mensual, Anual..." />
+            </div>
+
+            <div className="grid gap-2 md:col-span-2">
+              <Label htmlFor="bienAsegurado">Bien Asegurado / Riesgo</Label>
+              <Input id="bienAsegurado" name="bienAsegurado" value={formData.bienAsegurado} onChange={handleChange} placeholder="Ej. Ford EcoSport AB123CD / Plan Hogar..." />
             </div>
             
             <div className="grid gap-2 md:col-span-2">

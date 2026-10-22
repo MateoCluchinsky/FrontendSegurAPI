@@ -24,6 +24,7 @@ global.ResizeObserver = class ResizeObserver {
 const mockStats = {
   cantClientesActivos: 10,
   totalPrimas: 150000,
+  totalPremios: 150000,
   cantPolizasActivas: 5,
   polizasPorCompania: [
     { nombre: 'Sancor', cantidad: 2 },
@@ -39,6 +40,7 @@ const mockPolizas = [
     inicioVigencia: '2023-01-01',
     finVigencia: '2024-01-01',
     prima: 30000,
+    premio: 30000,
     nombreRamo: 'Automotor',
     nombreCliente: 'Juan Perez',
     tipoPago: 'TARJETA_CREDITO'
@@ -114,4 +116,69 @@ describe('Dashboard Component', () => {
     expect(screen.getByText('Composición por Ramo')).toBeInTheDocument();
     expect(screen.getByText('Medios de Pago')).toBeInTheDocument();
   });
+
+  it('renders range filter buttons and allows selecting quick ranges', async () => {
+    const statsWithMeses = {
+      ...mockStats,
+      polizasPorMes: [
+        { anio: 2024, mes: 1, cantidad: 5, totalPremio: 150000 },
+        { anio: 2026, mes: 3, cantidad: 8, totalPremio: 250000 }
+      ]
+    };
+    dashboardService.getDashboardStats.mockResolvedValue(statsWithMeses);
+    renderWithQueryClient(<Dashboard />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Todo el historial')).toBeInTheDocument();
+      expect(screen.getByText('Últimos 12 meses')).toBeInTheDocument();
+      expect(screen.getByText('Año 2026')).toBeInTheDocument();
+      expect(screen.getByText('Últimos 3 años')).toBeInTheDocument();
+    });
+
+    fireEvent.click(screen.getByText('Año 2026'));
+    expect(screen.getByText('Año 2026')).toHaveClass('bg-card');
+  });
+
+  it('opens and closes fullscreen dialog when expand button is clicked', async () => {
+    renderWithQueryClient(<Dashboard />);
+
+    await waitFor(() => {
+      expect(screen.getByTitle('Expandir a pantalla completa')).toBeInTheDocument();
+    });
+
+    const expandBtn = screen.getByTitle('Expandir a pantalla completa');
+    fireEvent.click(expandBtn);
+
+    expect(screen.getByText('Evolución Histórica de Pólizas y Premios')).toBeInTheDocument();
+
+    const minimizeBtn = screen.getByTitle('Minimizar');
+    fireEvent.click(minimizeBtn);
+
+    await waitFor(() => {
+      expect(screen.queryByText('Curva histórica mensual con zoom interactivo y filtrado por fecha')).not.toBeInTheDocument();
+    });
+  });
+
+  it('allows toggling between viewing by premios and cantidad', async () => {
+    renderWithQueryClient(<Dashboard />);
+
+    await waitFor(() => {
+      expect(screen.getByText('Premios ($)')).toBeInTheDocument();
+      expect(screen.getByText('Cantidad')).toBeInTheDocument();
+    });
+
+    expect(screen.getByText('Evolución mensual de premios emitidos por período')).toBeInTheDocument();
+
+    const cantidadBtn = screen.getByText('Cantidad');
+    fireEvent.click(cantidadBtn);
+
+    expect(screen.getByText('Evolución mensual de cantidad de pólizas emitidas por período')).toBeInTheDocument();
+
+    const premiosBtn = screen.getByText('Premios ($)');
+    fireEvent.click(premiosBtn);
+
+    expect(screen.getByText('Evolución mensual de premios emitidos por período')).toBeInTheDocument();
+  });
 });
+
+
